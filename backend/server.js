@@ -18,6 +18,10 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/challenges', require('./routes/challengeRoutes'));
 
+app.get('/', (req, res) => {
+  res.send('FitQuest API is running...');
+});
+
 // Basic Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
