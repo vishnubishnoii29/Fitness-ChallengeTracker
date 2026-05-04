@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --primary-color: #fc4c02; /* Strava-like vibrant orange */
   --primary-color-hover: #e34402;
