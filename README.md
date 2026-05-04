@@ -2,6 +2,8 @@
 
 A full-stack MERN application inspired by Strava, featuring a modern, highly engaging, and gamified user experience.
 
+**Live Demo:** [https://fitness-challenge-tracker-three.vercel.app/](https://fitness-challenge-tracker-three.vercel.app/)
+
 ## Features
 - **Vibrant UI**: Built with React and Framer Motion for smooth transitions and card-based layouts.
 - **Dark/Light Mode**: Full CSS variable support for a seamless theme switching experience.
@@ -32,7 +34,7 @@ A full-stack MERN application inspired by Strava, featuring a modern, highly eng
 2.  Connect your repository and set the root directory to `frontend`.
 3.  Vercel will automatically detect the Vite project.
 4.  Add the following Environment Variable:
-    -   `VITE_API_URL`: The URL of your deployed backend service (e.g., `https://your-backend.onrender.com/api`).
+    -   `VITE_API_URL`: `https://fitness-challengetracker-2.onrender.com/api`
 5.  Deploy!
 
 ## Local Development
