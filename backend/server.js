@@ -10,11 +10,23 @@ const Challenge = require('./models/Challenge');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware - JSON parsing should be first
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
 app.use(cors({
   origin: ['https://fitness-challenge-tracker-three.vercel.app', 'http://localhost:5173'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+// Debug middleware - log incoming requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Headers:`, req.headers);
+  console.log('Body:', req.body);
+  next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));

@@ -12,7 +12,7 @@ const Challenges = () => {
     const fetchChallenges = async () => {
       try {
         const [activeRes, allRes] = await Promise.all([
-          api.get('challenges/active'),
+          api.get('challenges/list/active'),
           api.get('challenges')
         ]);
         setActiveChallenges(activeRes.data);
