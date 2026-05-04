@@ -34,8 +34,8 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const [profileRes, challengesRes] = await Promise.all([
-          api.get('/users/profile'),
-          api.get('/challenges/active')
+          api.get('users/profile'),
+          api.get('challenges/active')
         ]);
         setProfile(profileRes.data);
         setActiveChallenges(challengesRes.data);
