@@ -28,8 +28,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get active challenges for a user (mock logic for now)
-router.get('/list/active', async (req, res) => {
+// Get active challenges for a user
+router.get('/active', protect, async (req, res) => {
   try {
     // Ideally, this fetches challenges based on logged-in user. We'll return mock active ones from DB.
     const challenges = await Challenge.find().limit(2);
