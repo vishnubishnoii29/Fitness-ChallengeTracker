@@ -6,7 +6,10 @@ const User = require('../models/User');
 
 // Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret_key', {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is not configured');
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
@@ -16,7 +19,6 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    console.log('Register request received:', req.body);
     const { username, email, password } = req.body;
 
     // Validate inputs
@@ -102,6 +104,7 @@ router.post('/login', async (req, res) => {
         level: user.level,
         points: user.points,
         streak: user.streak,
+        trend: Math.random() > 0.5 ? 'up' : 'down', // Mock trend data
         token: generateToken(user._id),
       });
     } else {

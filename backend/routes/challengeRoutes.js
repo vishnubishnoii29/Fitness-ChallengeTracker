@@ -14,20 +14,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single challenge
-router.get('/:id', async (req, res) => {
-  try {
-    const challenge = await Challenge.findById(req.params.id).populate('creator', 'username avatar');
-    if (!challenge) {
-      return res.status(404).json({ message: 'Challenge not found' });
-    }
-    res.json(challenge);
-  } catch (err) {
-    console.error('Challenge fetch error:', err);
-    res.status(500).json({ message: 'Error fetching challenge' });
-  }
-});
-
 // Get active challenges for a user
 router.get('/active', protect, async (req, res) => {
   try {
@@ -45,6 +31,20 @@ router.get('/active', protect, async (req, res) => {
   } catch (err) {
     console.error('Error fetching active challenges:', err);
     res.status(500).json({ message: 'Error fetching active challenges' });
+  }
+});
+
+// Get single challenge
+router.get('/:id', async (req, res) => {
+  try {
+    const challenge = await Challenge.findById(req.params.id).populate('creator', 'username avatar');
+    if (!challenge) {
+      return res.status(404).json({ message: 'Challenge not found' });
+    }
+    res.json(challenge);
+  } catch (err) {
+    console.error('Challenge fetch error:', err);
+    res.status(500).json({ message: 'Error fetching challenge' });
   }
 });
 

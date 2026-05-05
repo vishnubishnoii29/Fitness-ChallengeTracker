@@ -11,7 +11,7 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await api.get('users/leaderboard');
+        const res = await api.get(`users/leaderboard?filter=${filter.toLowerCase()}`);
         setLeaderboardData(res.data);
       } catch (err) {
         console.error('Error fetching leaderboard:', err);

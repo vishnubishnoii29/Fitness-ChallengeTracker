@@ -19,6 +19,11 @@ const Explore = () => {
 
   const categories = ['All', 'Cardio', 'Strength', 'Flexibility', 'Challenges'];
 
+  // Filter exploreItems based on selected filter
+  const filteredExploreItems = filter === 'All' 
+    ? exploreItems 
+    : exploreItems.filter(item => item.type === filter);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -77,25 +82,31 @@ const Explore = () => {
         </div>
 
         <div className="grid-4">
-          {exploreItems.map((item, i) => (
-            <div key={i} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ height: '150px' }}>
-                <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span className={`badge ${item.difficulty === 'Easy' ? 'badge-success' : item.difficulty === 'Medium' ? 'badge-warning' : 'badge-primary'}`}>{item.difficulty}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{item.duration}</span>
+          {filteredExploreItems.length > 0 ? (
+            filteredExploreItems.map((item, i) => (
+              <div key={i} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ height: '150px' }}>
+                  <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-                <h4 style={{ margin: '0 0 0.5rem 0' }}>{item.title}</h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1rem 0' }}>{item.type}</p>
-                
-                <button className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
-                  <Plus size={16} /> Add to Routine
-                </button>
+                <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span className={`badge ${item.difficulty === 'Easy' ? 'badge-success' : item.difficulty === 'Medium' ? 'badge-warning' : 'badge-primary'}`}>{item.difficulty}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{item.duration}</span>
+                  </div>
+                  <h4 style={{ margin: '0 0 0.5rem 0' }}>{item.title}</h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1rem 0' }}>{item.type}</p>
+                  
+                  <button className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
+                    <Plus size={16} /> Add to Routine
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+              <p>No items found for "{filter}" category.</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 

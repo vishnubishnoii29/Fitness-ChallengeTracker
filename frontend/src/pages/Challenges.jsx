@@ -7,6 +7,80 @@ const Challenges = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [availableChallenges, setAvailableChallenges] = useState([]);
+  const [error, setError] = useState('');
+  const [newChallenge, setNewChallenge] = useState({
+    title: '',
+    description: '',
+    durationDays: '',
+    goalType: '',
+    goalValue: '',
+    difficulty: 'Medium'
+  });
+
+  const handleJoinChallenge = async (challengeId) => {
+    try {
+      await api.post(`users/challenges/${challengeId}/join`);
+      
+      // Refresh challenges after joining
+      const [activeRes, allRes] = await Promise.all([
+        api.get('challenges/active'),
+        api.get('challenges')
+      ]);
+      setActiveChallenges(activeRes.data);
+      
+      const activeIds = activeRes.data.map(c => c._id);
+      const available = allRes.data.filter(c => !activeIds.includes(c._id));
+      setAvailableChallenges(available);
+    } catch (err) {
+      console.error('Error joining challenge:', err);
+      setError('Failed to join challenge. Please try again.');
+    }
+  };
+
+  const handleCreateChallenge = async () => {
+    try {
+      // Validate required fields
+      if (!newChallenge.title || !newChallenge.durationDays || !newChallenge.goalType || !newChallenge.goalValue) {
+        setError('Please fill in all required fields');
+        return;
+      }
+
+      await api.post('challenges', {
+        title: newChallenge.title,
+        description: newChallenge.description,
+        durationDays: parseInt(newChallenge.durationDays),
+        goalType: newChallenge.goalType,
+        goalValue: parseInt(newChallenge.goalValue),
+        difficulty: newChallenge.difficulty
+      });
+
+      // Reset form and close modal
+      setNewChallenge({
+        title: '',
+        description: '',
+        durationDays: '',
+        goalType: '',
+        goalValue: '',
+        difficulty: 'Medium'
+      });
+      setError('');
+      setShowCreateModal(false);
+
+      // Refresh challenges list
+      const [activeRes, allRes] = await Promise.all([
+        api.get('challenges/active'),
+        api.get('challenges')
+      ]);
+      setActiveChallenges(activeRes.data);
+      
+      const activeIds = activeRes.data.map(c => c._id);
+      const available = allRes.data.filter(c => !activeIds.includes(c._id));
+      setAvailableChallenges(available);
+    } catch (err) {
+      console.error('Error creating challenge:', err);
+      setError(err.response?.data?.message || 'Failed to create challenge. Please try again.');
+    }
+  };
 
   useEffect(() => {
     const fetchChallenges = async () => {
@@ -43,6 +117,14 @@ const Challenges = () => {
           <Plus size={20} /> Create Challenge
         </button>
       </div>
+
+      {/* Global error banner */}
+      {error && (
+        <div className="error-msg" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{error}</span>
+          <button onClick={() => setError('')} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.25rem', lineHeight: 1, padding: 0 }}>×</button>
+        </div>
+      )}
 
       <section style={{ marginBottom: '3rem' }}>
         <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="var(--primary-color)" /> Active Challenges</h2>
@@ -100,7 +182,13 @@ const Challenges = () => {
                 </div>
               </div>
 
-              <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>Join Challenge</button>
+              <button 
+                className="btn btn-secondary" 
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={() => handleJoinChallenge(c._id)}
+              >
+                Join Challenge
+              </button>
             </div>
           ))}
           {availableChallenges.length === 0 && <p>No available challenges at the moment.</p>}
@@ -113,20 +201,62 @@ const Challenges = () => {
           <div className="card" style={{ width: '100%', maxWidth: '500px' }}>
             <h2 style={{ marginBottom: '1.5rem' }}>Create Challenge</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <input type="text" placeholder="Challenge Title" style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
-              <textarea placeholder="Description" rows={3} style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)', fontFamily: 'inherit' }}></textarea>
+              <input 
+                type="text" 
+                placeholder="Challenge Title" 
+                value={newChallenge.title}
+                onChange={(e) => setNewChallenge({...newChallenge, title: e.target.value})}
+                style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} 
+              />
+              <textarea 
+                placeholder="Description" 
+                rows={3}
+                value={newChallenge.description}
+                onChange={(e) => setNewChallenge({...newChallenge, description: e.target.value})}
+                style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
+              ></textarea>
               <div className="grid-2">
-                <select style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }}>
-                  <option>Goal Type</option>
-                  <option>Distance</option>
-                  <option>Time</option>
-                  <option>Reps</option>
+                <select 
+                  value={newChallenge.goalType}
+                  onChange={(e) => setNewChallenge({...newChallenge, goalType: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">Goal Type</option>
+                  <option value="Distance">Distance</option>
+                  <option value="Time">Time</option>
+                  <option value="Reps">Reps</option>
+                  <option value="Consistency">Consistency</option>
+                  <option value="Weight Loss">Weight Loss</option>
                 </select>
-                <input type="number" placeholder="Target Value" style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+                <input 
+                  type="number" 
+                  placeholder="Target Value" 
+                  value={newChallenge.goalValue}
+                  onChange={(e) => setNewChallenge({...newChallenge, goalValue: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} 
+                />
+              </div>
+              <div className="grid-2">
+                <input 
+                  type="number" 
+                  placeholder="Duration (Days)" 
+                  value={newChallenge.durationDays}
+                  onChange={(e) => setNewChallenge({...newChallenge, durationDays: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} 
+                />
+                <select 
+                  value={newChallenge.difficulty}
+                  onChange={(e) => setNewChallenge({...newChallenge, difficulty: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-color)', color: 'var(--text-primary)' }}
+                >
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
               </div>
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                 <button className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowCreateModal(false)}>Cancel</button>
-                <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowCreateModal(false)}>Create</button>
+                <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handleCreateChallenge}>Create</button>
               </div>
             </div>
           </div>

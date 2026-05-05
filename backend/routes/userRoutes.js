@@ -6,19 +6,47 @@ const { protect } = require('../middleware/authMiddleware');
 // Get all users for leaderboard
 router.get('/leaderboard', async (req, res) => {
   try {
-    const users = await User.find()
-      .select('-password')
-      .sort({ points: -1 })
-      .limit(10);
+    const { filter = 'global' } = req.query;
+    let users;
     
-    // Add rank property dynamically
+    switch (filter.toLowerCase()) {
+      case 'weekly':
+        // For weekly leaderboard, sort by recent activity (mock implementation)
+        users = await User.find()
+          .select('-password')
+          .sort({ streak: -1, points: -1 }) // Prioritize streak, then points
+          .limit(10);
+        break;
+        
+      case 'friends':
+        // For friends leaderboard, return a subset of users (mock implementation)
+        // In a real app, this would filter by actual friends list
+        users = await User.find()
+          .select('-password')
+          .sort({ points: -1 })
+          .limit(5); // Fewer results for friends
+        break;
+        
+      case 'global':
+      default:
+        // Global leaderboard - all users sorted by points
+        users = await User.find()
+          .select('-password')
+          .sort({ points: -1 })
+          .limit(10);
+        break;
+    }
+    
+    // Add rank property and trend
     const rankedUsers = users.map((u, index) => {
       const userObj = u.toObject();
       return {
         ...userObj,
-        rank: index + 1
+        rank: index + 1,
+        trend: Math.random() > 0.5 ? 'up' : 'down' // Mock trend data
       };
     });
+    
     res.json(rankedUsers);
   } catch (err) {
     console.error('Leaderboard error:', err);
@@ -34,7 +62,12 @@ router.get('/profile', protect, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    
+    // Add trend field for consistency
+    const userObj = user.toObject();
+    userObj.trend = Math.random() > 0.5 ? 'up' : 'down'; // Mock trend data
+    
+    res.json(userObj);
   } catch (err) {
     console.error('Profile fetch error:', err);
     res.status(500).json({ message: 'Error fetching profile' });

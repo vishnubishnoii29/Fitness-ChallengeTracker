@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 
 // Import models for seeding
 const User = require('./models/User');
@@ -14,19 +15,35 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+const allowedOrigins = [
+  'https://fitness-challenge-tracker-three.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+];
+
 app.use(cors({
-  origin: ['https://fitness-challenge-tracker-three.vercel.app', 'http://localhost:5173'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Debug middleware - log incoming requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Headers:`, req.headers);
-  console.log('Body:', req.body);
-  next();
-});
+// Debug middleware - log incoming requests (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    // Don't log sensitive data like passwords
+    const sanitizedBody = { ...req.body };
+    if (sanitizedBody.password) delete sanitizedBody.password;
+    console.log('Body:', sanitizedBody);
+    next();
+  });
+}
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -37,14 +54,14 @@ app.get('/', (req, res) => {
   res.send('FitQuest API is running...');
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
+
 // Basic Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong!', error: err.message });
-});
-
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
 });
 
 // Seed Database Function
@@ -53,12 +70,16 @@ const seedDB = async () => {
     const userCount = await User.countDocuments();
     if (userCount === 0) {
       console.log('Seeding Users...');
+      
+      // Hash passwords for seeded users
+      const hashedPassword = await bcrypt.hash('123', 10);
+      
       await User.insertMany([
-        { username: '@sjenkins', email: 's@test.com', password: '123', level: 42, points: 14500, streak: 120, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80' },
-        { username: '@alex_t', email: 'a@test.com', password: '123', level: 38, points: 13200, streak: 85, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80' },
-        { username: '@marcusd', email: 'm@test.com', password: '123', level: 36, points: 12850, streak: 45, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80' },
-        { username: '@emma_w', email: 'e@test.com', password: '123', level: 34, points: 11900, streak: 60, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80' },
-        { username: '@dchen', email: 'd@test.com', password: '123', level: 30, points: 10500, streak: 12, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80' }
+        { username: '@sjenkins', email: 's@test.com', password: hashedPassword, level: 42, points: 14500, streak: 120, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80' },
+        { username: '@alex_t', email: 'a@test.com', password: hashedPassword, level: 38, points: 13200, streak: 85, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80' },
+        { username: '@marcusd', email: 'm@test.com', password: hashedPassword, level: 36, points: 12850, streak: 45, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80' },
+        { username: '@emma_w', email: 'e@test.com', password: hashedPassword, level: 34, points: 11900, streak: 60, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80' },
+        { username: '@dchen', email: 'd@test.com', password: hashedPassword, level: 30, points: 10500, streak: 12, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80' }
       ]);
     }
 

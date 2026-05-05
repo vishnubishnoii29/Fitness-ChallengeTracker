@@ -72,7 +72,12 @@ const Dashboard = () => {
     },
   };
 
-  if (!profile) return <div>Loading...</div>;
+  if (!profile) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--text-secondary)', fontSize: '1.25rem', gap: '0.75rem' }}>
+      <span style={{ display: 'inline-block', width: '24px', height: '24px', border: '3px solid var(--border-color)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      Loading dashboard...
+    </div>
+  );
 
   return (
     <motion.div 
@@ -88,10 +93,10 @@ const Dashboard = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontWeight: 'bold', margin: 0 }}>Level {profile.level}</p>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>{profile.xp || profile.points} XP</p>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>{profile.xp !== undefined ? profile.xp : profile.points} XP</p>
           </div>
           <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--gradient-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.25rem', overflow: 'hidden' }}>
-            {profile.avatar ? <img src={profile.avatar} alt="avatar" style={{width: '100%', height: '100%', objectFit: 'cover'}} /> : profile.username[1].toUpperCase()}
+            {profile.avatar ? <img src={profile.avatar} alt="avatar" style={{width: '100%', height: '100%', objectFit: 'cover'}} /> : profile.username?.[0]?.toUpperCase() || '?'}
           </div>
         </div>
       </header>
