@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const { protect } = require('../middleware/authMiddleware');
 
 // Get all users for leaderboard
@@ -77,7 +78,7 @@ router.get('/profile', protect, async (req, res) => {
 // Update user profile
 router.put('/profile', protect, async (req, res) => {
   try {
-    const { username, avatar, level, points, streak } = req.body;
+    const { username, avatar, level, points, streak, age, height, weight } = req.body;
     
     // Validate input
     if (username && username.length < 3) {
@@ -90,6 +91,9 @@ router.put('/profile', protect, async (req, res) => {
     if (level !== undefined) updateData.level = level;
     if (points !== undefined) updateData.points = points;
     if (streak !== undefined) updateData.streak = streak;
+    if (age !== undefined) updateData.age = age;
+    if (height !== undefined) updateData.height = height;
+    if (weight !== undefined) updateData.weight = weight;
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
@@ -105,6 +109,42 @@ router.put('/profile', protect, async (req, res) => {
   } catch (err) {
     console.error('Profile update error:', err);
     res.status(500).json({ message: 'Error updating profile' });
+  }
+});
+
+// Change Password
+router.put('/password', protect, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const bcrypt = require('bcryptjs');
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Validate new password
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    
+    console.log(`Saving updated password for user: ${user.username}`);
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Password update error:', err);
+    res.status(500).json({ message: 'Error updating password' });
   }
 });
 

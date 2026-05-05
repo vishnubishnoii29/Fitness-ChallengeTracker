@@ -1,25 +1,24 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useState } from 'react';
 import api from '../api';
+import { AuthContext } from './auth';
 
-const AuthContext = createContext();
+const getStoredUser = () => {
+  const storedUser = localStorage.getItem('user');
+
+  if (!storedUser) return null;
+
+  try {
+    return JSON.parse(storedUser);
+  } catch (error) {
+    console.error('Failed to parse stored user data:', error);
+    localStorage.removeItem('user');
+    return null;
+  }
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('Failed to parse stored user data:', error);
-        localStorage.removeItem('user'); // Clear corrupt data
-      }
-    }
-    setLoading(false);
-  }, []);
+  const [user, setUser] = useState(() => getStoredUser());
+  const [loading] = useState(false);
 
   const login = async (email, password) => {
     try {
@@ -49,10 +48,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

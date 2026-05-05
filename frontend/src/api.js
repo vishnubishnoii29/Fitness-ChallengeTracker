@@ -19,4 +19,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle unauthorized responses (401)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('user');
+      // If we are not on login/register/landing, redirect to login
+      if (!['/login', '/register', '/'].includes(window.location.pathname)) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+
 export default api;

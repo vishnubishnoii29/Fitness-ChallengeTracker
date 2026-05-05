@@ -7,6 +7,8 @@ const bcrypt = require('bcryptjs');
 // Import models for seeding
 const User = require('./models/User');
 const Challenge = require('./models/Challenge');
+const Activity = require('./models/Activity');
+const Notification = require('./models/Notification');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +51,8 @@ if (process.env.NODE_ENV !== 'production') {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/challenges', require('./routes/challengeRoutes'));
+app.use('/api/activity', require('./routes/activityRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 app.get('/', (req, res) => {
   res.send('FitQuest API is running...');
@@ -110,6 +114,66 @@ const connectDB = async () => {
       console.log('No MONGO_URI provided, skipping DB connection for now.');
     }
     
+    // Start activity diff processor every minute
+    const processActivityDiffs = async () => {
+      try {
+        console.log('[Background Task] Running 1-minute heartbeat task...');
+        
+        // 1. Fetch all users to send them a heartbeat
+        const users = await User.find({});
+        
+        for (const user of users) {
+          // Check for unprocessed activities for this user
+          const unprocessed = await Activity.find({ userId: user._id, processed: false });
+          
+          const fitnessTips = [
+            "Tip: Drink at least 8 glasses of water today for optimal metabolism.",
+            "AI Recommendation: Try adding 10 minutes of HIIT to your routine for better calorie burn.",
+            "Diet Tip: High-protein breakfasts can help reduce cravings throughout the day.",
+            "Challenge: Can you do 20 pushups right now? Give it a try!",
+            "Workout Tip: Remember to stretch for 5 minutes after your session to aid recovery.",
+            "Pro Tip: Consistency is better than intensity. Keep showing up!",
+            "AI Suggestion: Your sleep affects your gains. Aim for 7-9 hours tonight.",
+            "Quick Routine: Take a 5-minute walk every hour to stay active while working."
+          ];
+
+          let message = fitnessTips[Math.floor(Math.random() * fitnessTips.length)];
+          let title = 'AI Fitness Tip';
+          
+          if (unprocessed.length > 0) {
+            title = 'FitQuest Update';
+            const counts = unprocessed.reduce((acc, it) => {
+              acc[it.type] = (acc[it.type] || 0) + 1;
+              return acc;
+            }, {});
+            const parts = Object.entries(counts).map(([t, c]) => `${c} ${t}${c > 1 ? 's' : ''}`);
+            message = `Activity Update: ${parts.join(', ')}. Keep moving!`;
+            
+            // Mark these activities as processed
+            await Activity.updateMany({ _id: { $in: unprocessed.map(a => a._id) } }, { processed: true });
+          }
+
+          // Create the notification for this user
+          await Notification.create({ 
+            userId: user._id, 
+            title: title, 
+            message,
+            read: false
+          });
+          
+          console.log(`[Background Task] Notification sent to ${user.username || user.email || user._id}`);
+        }
+
+        console.log(`[Background Task] Completed heartbeat for ${users.length} users.`);
+      } catch (err) {
+        console.error('[Background Task] ERROR:', err);
+      }
+    };
+
+    // Run immediately and then every minute
+    processActivityDiffs();
+    setInterval(processActivityDiffs, 60 * 1000);
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

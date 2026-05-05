@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
   xp: { type: Number, default: 0 },
   streak: { type: Number, default: 0 },
   points: { type: Number, default: 0 },
+  age: { type: Number, default: 0 },
+  height: { type: Number, default: 0 },
+  weight: { type: Number, default: 0 },
   activeChallenges: [{
     challengeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' },
     progress: { type: Number, default: 0 }

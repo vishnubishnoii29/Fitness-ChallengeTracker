@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Trophy, Target, Clock, Gift } from 'lucide-react';
 import api from '../api';
@@ -102,35 +102,55 @@ const Challenges = () => {
     fetchChallenges();
   }, []);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.5, ease: 'easeOut' }
+    }
+  };
+
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>Challenges</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Push your limits and earn rewards.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+        <motion.div variants={cardVariants}>
+          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem', color: '#fc4c02', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>Challenges</h1>
+          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Push your limits and earn rewards.</p>
+        </motion.div>
+        <motion.button variants={cardVariants} className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
           <Plus size={20} /> Create Challenge
-        </button>
+        </motion.button>
       </div>
 
       {/* Global error banner */}
       {error && (
-        <div className="error-msg" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <motion.div variants={cardVariants} className="error-msg" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{error}</span>
           <button onClick={() => setError('')} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.25rem', lineHeight: 1, padding: 0 }}>×</button>
-        </div>
+        </motion.div>
       )}
 
       <section style={{ marginBottom: '3rem' }}>
-        <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="var(--primary-color)" /> Active Challenges</h2>
+        <motion.h2 variants={cardVariants} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="var(--primary-color)" /> Active Challenges</motion.h2>
         <div className="grid-2">
           {activeChallenges.map((c, i) => (
-            <div key={i} className="card">
+            <motion.div key={i} variants={cardVariants} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <div>
                   <h3 style={{ margin: '0 0 0.25rem 0' }}>{c.title}</h3>
@@ -153,17 +173,17 @@ const Challenges = () => {
               <div style={{ padding: '0.75rem', background: 'var(--bg-color)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
                 <Gift size={16} color="var(--warning-color)" /> Reward: <strong>{c.rewardXP} XP - {c.rewardBadge}</strong>
               </div>
-            </div>
+            </motion.div>
           ))}
-          {activeChallenges.length === 0 && <p>No active challenges. Join one below!</p>}
+          {activeChallenges.length === 0 && <motion.p variants={cardVariants}>No active challenges. Join one below!</motion.p>}
         </div>
       </section>
 
       <section>
-        <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Trophy color="var(--warning-color)" /> Available Challenges</h2>
+        <motion.h2 variants={cardVariants} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Trophy color="var(--warning-color)" /> Available Challenges</motion.h2>
         <div className="grid-3">
           {availableChallenges.map((c, i) => (
-            <div key={i} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <motion.div key={i} variants={cardVariants} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <span className={`badge ${c.difficulty === 'Easy' ? 'badge-success' : c.difficulty === 'Medium' ? 'badge-warning' : 'badge-primary'}`}>{c.difficulty}</span>
                 <span className="badge" style={{ background: 'var(--bg-color)' }}>{c.goalType}</span>
@@ -189,16 +209,21 @@ const Challenges = () => {
               >
                 Join Challenge
               </button>
-            </div>
+            </motion.div>
           ))}
-          {availableChallenges.length === 0 && <p>No available challenges at the moment.</p>}
+          {availableChallenges.length === 0 && <motion.p variants={cardVariants}>No available challenges at the moment.</motion.p>}
         </div>
       </section>
 
       {/* Modal would go here */}
       {showCreateModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(4px)' }}>
-          <div className="card" style={{ width: '100%', maxWidth: '500px' }}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="card" 
+            style={{ width: '100%', maxWidth: '500px' }}
+          >
             <h2 style={{ marginBottom: '1.5rem' }}>Create Challenge</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <input 
@@ -259,7 +284,7 @@ const Challenges = () => {
                 <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handleCreateChallenge}>Create</button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 

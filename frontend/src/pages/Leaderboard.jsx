@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Medal, Users, Globe, Calendar, ChevronUp, ChevronDown, Award } from 'lucide-react';
 import api from '../api';
@@ -22,21 +22,61 @@ const Leaderboard = () => {
     fetchLeaderboard();
   }, [filter]);
 
-  if (loading) return <div>Loading Leaderboard...</div>;
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'white', gap: '1rem' }}>
+      <span style={{ 
+        display: 'inline-block', 
+        width: '40px', 
+        height: '40px', 
+        border: '3px solid rgba(255,255,255,0.1)', 
+        borderTopColor: '#fc4c02', 
+        borderRadius: '50%', 
+        animation: 'spin 1s linear infinite' 
+      }} />
+      <p style={{ fontSize: '1.1rem', fontWeight: 500, opacity: 0.8 }}>Loading Leaderboard...</p>
+    </div>
+  );
+
+  if (!leaderboardData || leaderboardData.length === 0) return (
+    <div style={{ textAlign: 'center', padding: '5rem', color: 'rgba(255,255,255,0.6)' }}>
+      <Medal size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
+      <p>No leaderboard data available yet.</p>
+    </div>
+  );
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.5, ease: 'easeOut' }
+    }
+  };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>Leaderboard</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>See how you stack up against the community.</p>
-        </div>
+        <motion.div variants={cardVariants}>
+          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem', color: '#fc4c02', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>Leaderboard</h1>
+          <p style={{ color: 'rgba(255,255,255,0.8)' }}>See how you stack up against the community.</p>
+        </motion.div>
         
-        <div style={{ display: 'flex', background: 'var(--surface-color)', padding: '0.25rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+        <motion.div variants={cardVariants} style={{ display: 'flex', background: 'var(--surface-color)', padding: '0.25rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
           {['Global', 'Friends', 'Weekly'].map(f => (
             <button 
               key={f}
@@ -58,10 +98,10 @@ const Leaderboard = () => {
               {f}
             </button>
           ))}
-        </div>
+        </motion.div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <motion.div variants={cardVariants} className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 'bold' }}>
             <Award size={16} /> RANK & USER
@@ -103,10 +143,10 @@ const Leaderboard = () => {
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <h4 style={{ margin: 0 }}>{user.username.replace('@', '')}</h4>
+                    <h4 style={{ margin: 0 }}>{user.username ? user.username.replace('@', '') : 'User'}</h4>
                     {user.isCurrentUser && <span className="badge badge-primary" style={{ padding: '0.1rem 0.5rem', fontSize: '0.65rem' }}>YOU</span>}
                   </div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{user.username}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{user.username || ''}</span>
                 </div>
               </div>
 
@@ -125,7 +165,7 @@ const Leaderboard = () => {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
