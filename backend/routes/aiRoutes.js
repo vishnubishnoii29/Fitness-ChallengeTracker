@@ -5,18 +5,34 @@ const User = require('../models/User');
 const Workout = require('../models/Workout');
 const Activity = require('../models/Activity');
 
+// Helper for Ollama (Local AI via Cloudflare Tunnel)
+const callOllama = async (messages) => {
+  const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+  const model = process.env.OLLAMA_MODEL || 'phi3';
+
+  try {
+    console.log(`[AI] Attempting Ollama at: ${ollamaUrl}`);
+    const response = await fetch(`${ollamaUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, stream: false })
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.message?.content || null;
+  } catch (err) {
+    console.log(`[AI] Ollama unreachable: ${err.message}`);
+    return null;
+  }
+};
+
 // Helper for OpenRouter API
 const callOpenRouter = async (messages) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey || apiKey.includes('your_')) {
-    console.log('[OpenRouter] No valid API key found');
-    return null;
-  }
+  if (!apiKey || apiKey.includes('your_')) return null;
 
   try {
-    const modelId = "openrouter/free"; // Using auto-free selection as requested
-    console.log(`[OpenRouter] Calling API with model: ${modelId}`);
-    
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -24,24 +40,24 @@ const callOpenRouter = async (messages) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        "model": modelId,
+        "model": "openrouter/free",
         "messages": messages,
         "max_tokens": 250
       })
     });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`[OpenRouter API Error] Status: ${response.status}, Body: ${errorData}`);
-      return null;
-    }
-
     const data = await response.json();
     return data.choices?.[0]?.message?.content || null;
   } catch (err) {
-    console.error('[OpenRouter Network Error]:', err.message);
     return null;
   }
+};
+
+// Unified AI Dispatcher
+const callAI = async (messages) => {
+  const ollamaRes = await callOllama(messages);
+  if (ollamaRes) return ollamaRes;
+  return await callOpenRouter(messages);
 };
 
 router.post('/chat', auth, async (req, res) => {
@@ -52,7 +68,7 @@ router.post('/chat', auth, async (req, res) => {
 
     const user = await User.findById(userId);
     const recentActivities = await Activity.find({ userId }).sort({ createdAt: -1 }).limit(5);
-    
+
     const userContext = `
       User Profile:
       - Username: ${user.username}
@@ -69,26 +85,27 @@ router.post('/chat', auth, async (req, res) => {
         role: msg.role === 'model' ? 'assistant' : 'user',
         content: msg.content
       })),
-      { 
-        role: "user", 
+      {
+        role: "user",
         content: `INSTRUCTIONS: You are FitQuest AI, a highly motivating and knowledgeable fitness coach. 
         Context: ${userContext}
         
-        User Question: ${message}` 
+        User Question: ${message}`
       }
     ];
 
-    if (!process.env.OPENROUTER_API_KEY) {
-        return res.json({ 
-            message: "I'm in Demo Mode (OpenRouter key missing). Keep up that " + user.streak + " day streak!",
-            isDemo: true
-        });
+    // Only show demo mode if BOTH AI sources are missing
+    if (!process.env.OPENROUTER_API_KEY && !process.env.OLLAMA_URL) {
+      return res.json({
+        message: "I'm in Demo Mode. Connect Ollama or an API key to chat!",
+        isDemo: true
+      });
     }
 
-    const aiResponse = await callOpenRouter(messages);
+    const aiResponse = await callAI(messages);
 
     if (!aiResponse) {
-      return res.status(500).json({ message: 'AI is temporarily unavailable via OpenRouter' });
+      return res.status(500).json({ message: 'AI is temporarily unavailable. Check your local Ollama/Cloudflare tunnel!' });
     }
 
     res.json({ message: aiResponse });
@@ -102,9 +119,9 @@ router.get('/insights', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
-    
+
     if (!process.env.OPENROUTER_API_KEY) {
-      return res.json({ 
+      return res.json({
         insight: `You're doing great on your ${user.streak}-day streak!`,
         isDemo: true
       });
@@ -112,7 +129,7 @@ router.get('/insights', auth, async (req, res) => {
 
     const prompt = `INSTRUCTIONS: You are FitQuest AI. Based on User: ${user.username}, Level: ${user.level}, Streak: ${user.streak}, provide a short encouraging fitness tip (max 15 words).`;
     console.log('[DEBUG] Calling AI insights for:', user.username);
-    const aiResponse = await callOpenRouter([{ role: "user", content: prompt }]);
+    const aiResponse = await callAI([{ role: "user", content: prompt }]);
     console.log('[DEBUG] AI Insight Result:', aiResponse ? 'SUCCESS' : 'EMPTY');
 
     res.json({ insight: aiResponse || `Keep up the great work! You're on a ${user.streak}-day streak and doing amazing.` });
@@ -127,7 +144,7 @@ router.get('/recommendations', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
-    
+
     // 1. Check if we have valid recommendations for today
     const today = new Date().toISOString().split('T')[0];
     if (user.recommendationsDate === today && user.dailyRecommendations && user.dailyRecommendations.length > 0) {
@@ -146,7 +163,7 @@ router.get('/recommendations', auth, async (req, res) => {
         match: '95%',
         aiReason: `This ${w.type} session is recommended based on your recent activity.`
       }));
-      
+
       // Save fallback to user cache too
       user.dailyRecommendations = localFallbacks;
       user.recommendationsDate = today;
@@ -163,13 +180,13 @@ router.get('/recommendations', auth, async (req, res) => {
       Return ONLY a JSON array of objects: [{"id": number, "reason": "short string", "match": "90-99%"}]
     `;
 
-    const aiResponse = await callOpenRouter([{ role: "user", content: context }]);
-    
+    const aiResponse = await callAI([{ role: "user", content: context }]);
+
     try {
       // Safely check if aiResponse exists before matching
       const jsonStr = (aiResponse && aiResponse.match(/\[.*\]/s)) ? aiResponse.match(/\[.*\]/s)[0] : "[]";
       const selected = JSON.parse(jsonStr);
-      
+
       const finalRecommendations = selected.map(sel => {
         const workout = workouts[sel.id];
         if (!workout) return null;
