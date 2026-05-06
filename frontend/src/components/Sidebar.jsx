@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth.js';
-import { LayoutDashboard, Compass, Trophy, Dumbbell, ListTodo, Medal, Award, Users, LogOut, Flame, Menu } from 'lucide-react';
+import { LayoutDashboard, Compass, Trophy, Dumbbell, ListTodo, Medal, Award, Users, LogOut, Flame, Menu, Sparkles } from 'lucide-react';
 import '../index.css';
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
@@ -101,6 +101,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         <NavLink to="/achievements" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Achievements">
           <Award size={20} style={{ flexShrink: 0 }} />
           {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Achievements</span>}
+        </NavLink>
+        <NavLink to="/ai-coach" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="AI Coach" style={{ 
+          background: 'rgba(252, 76, 2, 0.05)', 
+          border: '1px solid rgba(252, 76, 2, 0.1)',
+          margin: '0.5rem 0'
+        }}>
+          <Sparkles size={20} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+          {!isCollapsed && <span style={{ whiteSpace: 'nowrap', color: 'var(--primary-color)', fontWeight: 700 }}>AI Coach</span>}
         </NavLink>
         <NavLink to="/social" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Social">
           <Users size={20} style={{ flexShrink: 0 }} />

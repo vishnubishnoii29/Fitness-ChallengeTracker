@@ -41,7 +41,7 @@ const Explore = () => {
     const fetchExploreData = async () => {
       try {
         const [recRes, workoutRes, challengeRes] = await Promise.allSettled([
-          api.get('workouts/recommended'),
+          api.get('ai/recommendations'),
           api.get('workouts'),
           api.get('challenges')
         ]);
@@ -190,22 +190,46 @@ const Explore = () => {
         <div className="grid-2">
           {recommendations.map((item, i) => (
             <motion.div key={i} variants={cardVariants} 
-              whileHover={{ y: -8, scale: 1.01 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="card" 
-              style={{ padding: 0, overflow: 'hidden', position: 'relative', height: '250px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
             >
-              <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.2))', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                  <div style={{ color: 'white' }}>
-                    <span className="badge badge-success" style={{ marginBottom: '0.5rem', boxShadow: '0 4px 10px rgba(16,185,129,0.3)' }}>{item.match} Match</span>
-                    <h3 style={{ color: 'white', margin: '0 0 0.25rem 0', fontWeight: 900 }}>{item.title}</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', margin: 0, fontWeight: 600 }}>{item.difficulty} • {item.duration} • {item.type}</p>
+              <motion.div
+                whileHover={{ y: -5, scale: 1.01 }}
+                className="card" 
+                style={{ padding: 0, overflow: 'hidden', position: 'relative', height: '200px' }}
+              >
+                <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div style={{ color: 'white' }}>
+                      <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>{item.match} Match</span>
+                      <h3 style={{ color: 'white', margin: '0 0 0.25rem 0', fontWeight: 900, fontSize: '1.1rem' }}>{item.title}</h3>
+                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', margin: 0, fontWeight: 600 }}>{item.difficulty} • {item.duration}</p>
+                    </div>
+                    <button className="btn btn-primary" style={{ padding: '0.5rem 1rem' }} onClick={() => handleAction(item)}><Play size={14} /> Start</button>
                   </div>
-                  <button className="btn btn-primary" style={{ padding: '0.6rem 1.25rem', boxShadow: '0 5px 15px rgba(252,76,2,0.35)' }} onClick={() => handleAction(item)}><Play size={16} /> Start</button>
                 </div>
-              </div>
+              </motion.div>
+              
+              {item.aiReason && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ 
+                    background: 'rgba(252, 76, 2, 0.1)', 
+                    border: '1px solid rgba(252, 76, 2, 0.2)', 
+                    padding: '0.75rem 1rem', 
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px'
+                  }}
+                >
+                  <Sparkles size={16} color="var(--primary-color)" style={{ marginTop: '2px' }} />
+                  <p style={{ color: 'white', fontSize: '0.85rem', fontWeight: 600, margin: 0, lineHeight: '1.4' }}>
+                    {item.aiReason}
+                  </p>
+                </motion.div>
+              )}
             </motion.div>
           ))}
         </div>

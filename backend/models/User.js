@@ -35,7 +35,9 @@ const userSchema = new mongoose.Schema({
     status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
     createdAt: { type: Date, default: Date.now }
   }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  dailyRecommendations: { type: Array, default: [] },
+  recommendationsDate: { type: String, default: "" } // Store as YYYY-MM-DD
 });
 
 userSchema.index({ points: -1 });

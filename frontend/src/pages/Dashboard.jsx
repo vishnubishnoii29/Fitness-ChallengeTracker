@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Flame, Trophy, Zap, TrendingUp, Calendar, Plus, X, CheckCircle, Target } from 'lucide-react';
+import { Activity, Flame, Trophy, Zap, TrendingUp, Calendar, Plus, X, CheckCircle, Target, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth.js';
@@ -43,6 +45,8 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingForm, setOnboardingForm] = useState({ age: '', height: '', weight: '' });
   const [onboardingSubmitting, setOnboardingSubmitting] = useState(false);
+  const [aiInsight, setAiInsight] = useState(null);
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const navigate = useNavigate();
   const { logout, user } = useAuth();
@@ -95,6 +99,18 @@ const Dashboard = () => {
         const nres = await api.get('notifications');
       } catch (err) {
         console.error('Error fetching notifications count:', err);
+      }
+
+      // Fetch AI Insight
+      setLoadingAI(true);
+      try {
+        const aiRes = await api.get('ai/insights');
+        console.log('[DEBUG] Dashboard AI Insight response:', aiRes.data);
+        setAiInsight(aiRes.data.insight);
+      } catch (err) {
+        console.error('Error fetching AI insight:', err);
+      } finally {
+        setLoadingAI(false);
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
@@ -418,6 +434,53 @@ const Dashboard = () => {
           </div>
         </div>
       </header>
+
+      {/* AI Insight Bar - ALWAYS VISIBLE */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card" 
+        style={{ 
+          marginBottom: '2rem', 
+          padding: '1rem 1.5rem', 
+          background: 'linear-gradient(90deg, rgba(252, 76, 2, 0.15), rgba(255, 120, 73, 0.05))',
+          border: '1px solid rgba(252, 76, 2, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem'
+        }}
+      >
+        <div style={{ 
+          background: 'var(--primary-color)', 
+          padding: '0.6rem', 
+          borderRadius: '10px', 
+          color: 'white',
+          boxShadow: '0 4px 10px rgba(252, 76, 2, 0.3)'
+        }}>
+          <Sparkles size={20} className={loadingAI ? "spin-pulse" : ""} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary-color)', letterSpacing: '0.05em', display: 'block', marginBottom: '0.1rem' }}>AI COACH INSIGHT</span>
+          <div style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'white' }}>
+            {aiInsight || (loadingAI ? "Syncing with AI Coach..." : "Ready to guide your fitness journey!")}
+          </div>
+        </div>
+        <button 
+          onClick={() => navigate('/ai-coach')}
+          style={{ 
+            background: 'rgba(255,255,255,0.1)', 
+            border: 'none', 
+            borderRadius: '8px', 
+            padding: '0.5rem 1rem', 
+            color: 'white', 
+            fontSize: '0.8rem', 
+            fontWeight: 700, 
+            cursor: 'pointer' 
+          }}
+        >
+          Chat Now
+        </button>
+      </motion.div>
 
       <div className="dashboard-grid">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

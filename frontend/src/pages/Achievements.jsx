@@ -502,8 +502,8 @@ const Achievements = () => {
     }
   ];
 
-  const getAchievementsByTab = () => {
-    switch (activeTab) {
+  const getAchievementsByTab = (tabId = activeTab) => {
+    switch (tabId) {
       case 'challenges':
         return challengeAchievements;
       case 'streak':
@@ -605,8 +605,16 @@ const Achievements = () => {
             >
               {tab.icon}
               <span>{tab.label}</span>
-              <span className="badge badge-primary" style={{ marginLeft: '0.5rem', background: activeTab === tab.id ? 'rgba(255,255,255,0.2)' : 'var(--primary-color)' }}>
-                {unlockedCount(getAchievementsByTab())}/{totalCount(getAchievementsByTab())}
+              <span className="badge" style={{ 
+                marginLeft: '0.5rem', 
+                background: activeTab === tab.id ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)', 
+                color: 'white',
+                fontWeight: 900,
+                fontSize: '0.8rem',
+                padding: '0.2rem 0.6rem',
+                borderRadius: '8px'
+              }}>
+                {unlockedCount(getAchievementsByTab(tab.id))}/{totalCount(getAchievementsByTab(tab.id))}
               </span>
             </button>
           ))}

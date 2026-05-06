@@ -62,14 +62,21 @@ button {
 .profile-dropdown {
   position: absolute;
   width: 280px;
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(255, 255, 255, 0.15);
+  /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
+  -moz-backdrop-filter: blur(16px) saturate(180%);
+  -ms-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   z-index: 1000;
   overflow: hidden;
+  /* Performance optimization */
+  will-change: backdrop-filter, transform;
 }
 
 .dropdown-item {
@@ -172,17 +179,24 @@ h6 {
   position: relative;
   border-radius: 24px;
   padding: 2.5rem;
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(255, 255, 255, 0.12);
+  /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  -moz-backdrop-filter: blur(14px) saturate(180%);
+  -ms-backdrop-filter: blur(14px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 1;
   transform: translate3d(0, 0, 0.1px);
   backface-visibility: hidden;
-  will-change: transform, opacity;
+  /* Performance optimization */
+  will-change: transform, opacity, backdrop-filter;
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-color 0.4s ease;
+              border-color 0.4s ease,
+              backdrop-filter 0.4s ease;
 }
 
 /* Smoother shadow transition using pseudo-element */
@@ -243,9 +257,12 @@ h6 {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(239, 68, 68, 0.15);
+  /* Glass effect with all vendor prefixes */
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
+  -moz-backdrop-filter: blur(12px) saturate(180%);
+  -ms-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(239, 68, 68, 0.25);
   color: #ff8e8e;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -260,9 +277,12 @@ h6 {
 }
 
 .btn-success {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(16, 185, 129, 0.15);
+  /* Glass effect with all vendor prefixes */
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
+  -moz-backdrop-filter: blur(12px) saturate(180%);
+  -ms-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(16, 185, 129, 0.25);
   color: #6ee7b7;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -279,18 +299,25 @@ h6 {
 /* Button variant: glass (matches card glass) */
 .btn-glass {
   position: relative;
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(255, 255, 255, 0.12);
+  /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  -moz-backdrop-filter: blur(14px) saturate(180%);
+  -ms-backdrop-filter: blur(14px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
   color: var(--text-primary);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); /* Added for clarity */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   z-index: 1;
   transform: translateY(0) translateZ(0.1px);
   backface-visibility: hidden;
+  /* Performance optimization */
   will-change: transform, opacity, backdrop-filter;
-  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              backdrop-filter 0.4s ease;
 }
 
 
@@ -359,14 +386,20 @@ h6 {
   width: 280px;
   padding: 0.5rem;
   border-radius: 16px;
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(255, 255, 255, 0.15) !important;
+  /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
+  -moz-backdrop-filter: blur(16px) saturate(180%);
+  -ms-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   z-index: 1000;
   transform: translateZ(0);
-  will-change: backdrop-filter;
+  /* Performance optimization */
+  will-change: backdrop-filter, transform;
   animation: dropdownIn 180ms ease-out both;
 }
 
@@ -519,14 +552,20 @@ h6 {
   justify-content: space-between;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-lg);
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(10, 10, 10, 0.45);
+  /* Glass effect with all vendor prefixes */
   background: rgba(10, 10, 10, 0.28);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  -moz-backdrop-filter: blur(14px) saturate(180%);
+  -ms-backdrop-filter: blur(14px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-  will-change: backdrop-filter;
+  /* Performance optimization */
+  will-change: backdrop-filter, transform;
   animation: landingNavIn 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+  transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease, backdrop-filter 250ms ease;
 }
 
 .landing-nav:hover {
@@ -640,14 +679,19 @@ h6 {
 
 /* Sidebar */
 .sidebar {
-  background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.08);
+  /* Glass effect with all vendor prefixes */
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  -moz-backdrop-filter: blur(20px) saturate(180%);
+  -ms-backdrop-filter: blur(20px) saturate(180%);
   border-right: 1px solid var(--border-color);
   padding: 2rem 1.25rem;
   display: flex;
   flex-direction: column;
   z-index: 10;
+  /* Performance optimization */
+  will-change: backdrop-filter;
 }
 
 .nav-links {
@@ -688,11 +732,16 @@ h6 {
   position: absolute;
   inset: 0;
   z-index: -1;
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(255, 255, 255, 0.12);
+  /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
+  -moz-backdrop-filter: blur(16px) saturate(180%);
+  -ms-backdrop-filter: blur(16px) saturate(180%);
   transform: translateZ(0);
-  transform: translateZ(0);
+  /* Performance optimization */
   will-change: backdrop-filter;
 }
 
@@ -877,9 +926,14 @@ h6 {
 }
 
 .glass-bg {
+  /* Fallback for browsers that don't support backdrop-filter */
+  background: rgba(255, 255, 255, 0.12);
+  /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
+  -moz-backdrop-filter: blur(16px) saturate(180%);
+  -ms-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 

@@ -3,6 +3,7 @@
 FitQuest is a premium, full-stack MERN application designed to transform fitness into an addictive, RPG-like experience. Inspired by the competitive spirit of Strava and the engagement of modern gaming, it features a cinematic glassmorphism UI, real-time social interactions, and a robust quadratic progression system.
 
 **Live Demo:** [https://fitness-challenge-tracker-three.vercel.app/](https://fitness-challenge-tracker-three.vercel.app/)
+**Backend API:** [https://fitness-challengetracker-2.onrender.com/](https://fitness-challengetracker-2.onrender.com/)
 
 ---
 

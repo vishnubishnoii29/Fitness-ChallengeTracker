@@ -13,6 +13,7 @@ import Social from './pages/Social';
 import ProfileSettings from './pages/ProfileSettings';
 import Notifications from './pages/Notifications';
 import Achievements from './pages/Achievements';
+import AICoach from './pages/AICoach';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import LandingPage from './pages/LandingPage';
@@ -65,6 +66,7 @@ const AppLayout = () => {
           <Route path="/profile" element={<ProfileSettings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/achievements" element={<Achievements />} />
+          <Route path="/ai-coach" element={<AICoach />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
