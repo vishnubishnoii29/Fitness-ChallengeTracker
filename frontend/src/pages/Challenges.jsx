@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Trophy, Target, Clock, Gift, X, CheckCircle, Zap } from 'lucide-react';
+import { Plus, Trophy, Target, X, CheckCircle, Zap } from 'lucide-react';
 import api from '../api';
 
 const Challenges = () => {
@@ -23,9 +23,12 @@ const Challenges = () => {
 
   useEffect(() => {
     if (location.state?.openCreate) {
-      setShowCreateModal(true);
-      // Clear state so it doesn't reopen on refresh/back
-      window.history.replaceState({}, document.title);
+      const timer = window.setTimeout(() => {
+        setShowCreateModal(true);
+        // Clear state so it doesn't reopen on refresh/back
+        window.history.replaceState({}, document.title);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [location]);
 
@@ -131,23 +134,26 @@ const Challenges = () => {
   };
 
   useEffect(() => {
-    const fetchChallenges = async () => {
-      try {
-        const [activeRes, allRes] = await Promise.all([
-          api.get('challenges/active'),
-          api.get('challenges')
-        ]);
-        setActiveChallenges(activeRes.data);
-        
-        // Let's filter out the active ones from available ones for realism (mock logic)
-        const activeIds = activeRes.data.map(c => c._id);
-        const available = allRes.data.filter(c => !activeIds.includes(c._id));
-        setAvailableChallenges(available);
-      } catch (err) {
-        console.error('Error fetching challenges:', err);
-      }
-    };
-    fetchChallenges();
+    const timer = window.setTimeout(() => {
+      const fetchChallenges = async () => {
+        try {
+          const [activeRes, allRes] = await Promise.all([
+            api.get('challenges/active'),
+            api.get('challenges')
+          ]);
+          setActiveChallenges(activeRes.data);
+          
+          // Let's filter out the active ones from available ones for realism (mock logic)
+          const activeIds = activeRes.data.map(c => c._id);
+          const available = allRes.data.filter(c => !activeIds.includes(c._id));
+          setAvailableChallenges(available);
+        } catch (err) {
+          console.error('Error fetching challenges:', err);
+        }
+      };
+      fetchChallenges();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const containerVariants = {

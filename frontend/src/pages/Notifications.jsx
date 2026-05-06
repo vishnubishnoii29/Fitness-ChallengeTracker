@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../api';
-import { useAuth } from '../context/auth.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellOff, Trash2, ShieldCheck, Clock, CheckCircle2, ArrowLeft, CheckSquare } from 'lucide-react';
 import '../index.css';
 
 const Notifications = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -26,7 +23,10 @@ const Notifications = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    const timer = window.setTimeout(() => {
+      fetchNotifications();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const markRead = async (id) => {

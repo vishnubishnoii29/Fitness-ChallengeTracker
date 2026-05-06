@@ -1,4 +1,4 @@
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/auth.js';
 import { Flame, Trophy, Target, Users, TrendingUp, Medal, BarChart3 } from 'lucide-react';
@@ -7,7 +7,6 @@ import '../index.css';
 
 const LandingPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Scroll to top on mount

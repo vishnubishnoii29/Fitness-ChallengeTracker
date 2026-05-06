@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ListTodo, Calendar, Clock, X, CheckCircle, Target, Sparkles, Layout } from 'lucide-react';
+import { Plus, ListTodo, Clock, X, CheckCircle, Target, Sparkles, Layout } from 'lucide-react';
 import api from '../api';
 import '../index.css';
 
 const Routines = () => {
   const [activeRoutines, setActiveRoutines] = useState([]);
   const [availableRoutines, setAvailableRoutines] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [levelUpNotification, setLevelUpNotification] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState('');
@@ -36,13 +35,14 @@ const Routines = () => {
       setAvailableRoutines(all.filter(w => !activeIds.includes(w._id)));
     } catch (err) {
       console.error('Error fetching routines:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRoutines();
+    const timer = window.setTimeout(() => {
+      fetchRoutines();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const handleActivateRoutine = async (routineId) => {
@@ -125,6 +125,12 @@ const Routines = () => {
           <Plus size={20} /> Create Routine
         </motion.button>
       </div>
+
+      {error && (
+        <div className="error-msg" style={{ marginBottom: '1.5rem' }}>
+          {error}
+        </div>
+      )}
 
       {/* Current Focus Section */}
       <section style={{ marginBottom: '4rem' }}>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Target, Flame, Crown, Star, CheckCircle, Award, Medal, Zap, Lock, ArrowLeft } from 'lucide-react';
+import { Trophy, Target, Flame, Crown, Star, CheckCircle, Award, Medal, Zap, Lock } from 'lucide-react';
 import api from '../api';
 
 const Achievements = () => {
@@ -14,12 +13,11 @@ const Achievements = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, activeChallengesRes, leaderboardRes, activityRes, allChallengesRes] = await Promise.all([
+        const [profileRes, activeChallengesRes, leaderboardRes, activityRes] = await Promise.all([
           api.get('users/profile'),
           api.get('challenges/active'),
           api.get('users/leaderboard'),
-          api.get('activity/user'),
-          api.get('challenges')
+          api.get('activity/user')
         ]);
         setProfile(profileRes.data);
         setChallenges(activeChallengesRes.data || []);
@@ -27,7 +25,6 @@ const Achievements = () => {
         
         // Calculate completed challenges from activity data
         const activities = activityRes.data || [];
-        const allChallenges = allChallengesRes.data || [];
         const completedChallenges = activities.filter(activity => 
           activity.type === 'other' && activity.data?.type === 'challenge_won'
         );

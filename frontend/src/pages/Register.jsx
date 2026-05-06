@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, User, Flame } from 'lucide-react';
 import '../index.css';
 
-const BG_IMG = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?fm=jpg&q=80&w=3000&auto=format&fit=crop';
-
 const inputStyle = {
   width: '100%',
   padding: '0.85rem 1rem 0.85rem 2.75rem',

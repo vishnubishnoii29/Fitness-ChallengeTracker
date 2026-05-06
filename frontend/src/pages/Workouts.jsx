@@ -7,7 +7,6 @@ import '../index.css';
 const Workouts = () => {
   const [activeWorkouts, setActiveWorkouts] = useState([]);
   const [availableWorkouts, setAvailableWorkouts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [levelUpNotification, setLevelUpNotification] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState('');
@@ -37,13 +36,14 @@ const Workouts = () => {
       setAvailableWorkouts(all.filter(w => !activeIds.includes(w._id)));
     } catch (err) {
       console.error('Error fetching workouts:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchWorkouts();
+    const timer = window.setTimeout(() => {
+      fetchWorkouts();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const handleStartWorkout = async (workoutId) => {
@@ -126,6 +126,12 @@ const Workouts = () => {
           <Plus size={20} /> Create Workout
         </motion.button>
       </div>
+
+      {error && (
+        <div className="error-msg" style={{ marginBottom: '1.5rem' }}>
+          {error}
+        </div>
+      )}
 
       {/* Active Workouts Section */}
       <section style={{ marginBottom: '4rem' }}>

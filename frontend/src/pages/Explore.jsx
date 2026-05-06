@@ -22,9 +22,12 @@ const Explore = () => {
 
   // Sync filter when path changes
   useEffect(() => {
-    if (location.pathname === '/workouts') setKindFilter('Workout');
-    else if (location.pathname === '/routines') setKindFilter('Routine');
-    else setKindFilter('All');
+    const timer = window.setTimeout(() => {
+      if (location.pathname === '/workouts') setKindFilter('Workout');
+      else if (location.pathname === '/routines') setKindFilter('Routine');
+      else setKindFilter('All');
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [location.pathname]);
 
   const pageTitle = location.pathname === '/workouts' ? 'Workouts' : 
@@ -38,36 +41,39 @@ const Explore = () => {
   }, [notification]);
 
   useEffect(() => {
-    const fetchExploreData = async () => {
-      try {
-        const [recRes, workoutRes, challengeRes] = await Promise.allSettled([
-          api.get('ai/recommendations'),
-          api.get('workouts'),
-          api.get('challenges')
-        ]);
-        
-        const recommendationsData = recRes.status === 'fulfilled' ? recRes.value.data : [];
-        const workoutsData = workoutRes.status === 'fulfilled' ? workoutRes.value.data : [];
-        const challengesData = challengeRes.status === 'fulfilled' ? challengeRes.value.data : [];
+    const timer = window.setTimeout(() => {
+      const fetchExploreData = async () => {
+        try {
+          const [recRes, workoutRes, challengeRes] = await Promise.allSettled([
+            api.get('ai/recommendations'),
+            api.get('workouts'),
+            api.get('challenges')
+          ]);
+          
+          const recommendationsData = recRes.status === 'fulfilled' ? recRes.value.data : [];
+          const workoutsData = workoutRes.status === 'fulfilled' ? workoutRes.value.data : [];
+          const challengesData = challengeRes.status === 'fulfilled' ? challengeRes.value.data : [];
 
-        // Map challenges to fit workout structure for explore grid
-        const mappedChallenges = challengesData.map(c => ({
-          ...c,
-          kind: 'Challenge',
-          type: c.goalType || 'Challenge',
-          duration: `${c.durationDays} Days`,
-          image: c.image || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=500&q=80'
-        }));
+          // Map challenges to fit workout structure for explore grid
+          const mappedChallenges = challengesData.map(c => ({
+            ...c,
+            kind: 'Challenge',
+            type: c.goalType || 'Challenge',
+            duration: `${c.durationDays} Days`,
+            image: c.image || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=500&q=80'
+          }));
 
-        setRecommendations(recommendationsData);
-        setExploreItems([...workoutsData, ...mappedChallenges]);
-      } catch (err) {
-        console.error('Error fetching explore data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchExploreData();
+          setRecommendations(recommendationsData);
+          setExploreItems([...workoutsData, ...mappedChallenges]);
+        } catch (err) {
+          console.error('Error fetching explore data:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchExploreData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const categories = ['All', 'Cardio', 'Strength', 'Flexibility', 'HIIT', 'Yoga', 'Distance', 'Consistency'];

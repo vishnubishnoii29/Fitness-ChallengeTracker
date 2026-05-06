@@ -1,8 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Flame, Trophy, Zap, TrendingUp, Calendar, Plus, X, CheckCircle, Target, Sparkles } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth.js';
@@ -73,7 +71,26 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-  const fetchData = async () => {
+  const processActivityData = useCallback((activities) => {
+    const weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
+    activities.forEach(activity => {
+      const activityDate = new Date(activity.createdAt);
+      if (activityDate >= weekStart) {
+        const dayIndex = activityDate.getDay();
+        const calories = Number(activity.data?.calories) || 0;
+        weeklyData[dayIndex] += calories;
+      }
+    });
+
+    setWeeklyActivity(weeklyData);
+  }, []);
+
+  const fetchData = useCallback(async () => {
     try {
       const [profileRes, challengesRes, workoutsRes, activityRes, allChallengesRes] = await Promise.all([
         api.get('users/profile'),
@@ -94,12 +111,6 @@ const Dashboard = () => {
       
       const allChallenges = allChallengesRes.data;
       processActivityData(activityRes.data || [], challengesRes.data || [], allChallenges || []);
-      
-      try {
-        const nres = await api.get('notifications');
-      } catch (err) {
-        console.error('Error fetching notifications count:', err);
-      }
 
       // Fetch AI Insight
       setLoadingAI(true);
@@ -116,11 +127,14 @@ const Dashboard = () => {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data');
     }
-  };
+  }, [processActivityData]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const timer = window.setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchData]);
 
   const handleStopChallenge = async (challengeId) => {
     try {
@@ -182,7 +196,6 @@ const Dashboard = () => {
   };
 
   const handleCompleteWorkout = async (workoutId) => {
-    const workoutToComplete = activeWorkouts.find(w => w._id === workoutId);
     setActiveWorkouts(prev => prev.filter(w => w._id !== workoutId));
 
     setStatusMessage({ type: 'success', text: `Activity Completed!` });
@@ -200,42 +213,6 @@ const Dashboard = () => {
       console.error('Error completing workout:', err);
       fetchData();
     }
-  };
-
-  const calculateChallengeCalories = (challenge, progress = 100) => {
-    if (!challenge) return 0;
-    let totalCalories = 0;
-    const goalValue = challenge.goalValue || 0;
-
-    switch (challenge.goalType) {
-      case 'Distance': totalCalories = goalValue * 75; break;
-      case 'Time': totalCalories = goalValue * 10; break;
-      case 'Reps': totalCalories = goalValue * 0.5; break;
-      case 'Consistency': totalCalories = goalValue * 150; break;
-      case 'Weight Loss': totalCalories = goalValue; break;
-      default: totalCalories = goalValue || 0;
-    }
-    return (totalCalories * progress) / 100;
-  };
-
-  const processActivityData = (activities) => {
-    // 1. Weekly Chart Data (Calculated locally from activities)
-    const weeklyData = [0, 0, 0, 0, 0, 0, 0];
-    const today = new Date();
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay());
-    weekStart.setHours(0, 0, 0, 0);
-
-    activities.forEach(activity => {
-      const activityDate = new Date(activity.createdAt);
-      if (activityDate >= weekStart) {
-        const dayIndex = activityDate.getDay();
-        const calories = Number(activity.data?.calories) || 0;
-        weeklyData[dayIndex] += calories;
-      }
-    });
-
-    setWeeklyActivity(weeklyData);
   };
 
   useEffect(() => {

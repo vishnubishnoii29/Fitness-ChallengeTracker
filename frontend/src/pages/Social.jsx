@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, UserPlus, Check, X, Clock, Flame, Trophy, ArrowLeft, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Users, Search, UserPlus, Check, X, Clock, Flame, Trophy, CheckCircle } from 'lucide-react';
 import api from '../api';
 
 const Social = () => {
@@ -29,7 +28,10 @@ const Social = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const timer = window.setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {

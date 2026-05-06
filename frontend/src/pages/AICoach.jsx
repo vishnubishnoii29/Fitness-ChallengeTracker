@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, Bot, Sparkles, Trash2, ArrowLeft, MessageSquare, Zap, Activity, Info } from 'lucide-react';
+import { Send, User, Bot, Sparkles, Trash2, Zap, Activity, Info } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import api from '../api';
@@ -27,14 +27,14 @@ const AICoach = () => {
     { text: "Analyze my progress", icon: <Info size={14} /> }
   ];
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
     localStorage.setItem('chatHistory', JSON.stringify(messages));
     scrollToBottom();
   }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const handleSend = async (e, text = null) => {
     if (e) e.preventDefault();
