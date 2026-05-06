@@ -111,8 +111,11 @@ router.post('/login', async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Error logging in' });
+    console.error('Login error details:', err.message);
+    if (err.message.includes('JWT_SECRET')) {
+      return res.status(500).json({ message: 'Server configuration error: JWT_SECRET is missing' });
+    }
+    res.status(500).json({ message: 'Error logging in', error: err.message });
   }
 });
 

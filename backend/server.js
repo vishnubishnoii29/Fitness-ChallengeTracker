@@ -15,6 +15,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 console.log('>>> SERVER VERSION: 2.0 (Gemini 2.0 Ready) <<<');
+const essentialVars = ['MONGO_URI', 'JWT_SECRET'];
+essentialVars.forEach(v => {
+  if (!process.env[v]) {
+    console.warn(`[CRITICAL WARNING] Environment variable ${v} is missing!`);
+  }
+});
 
 // Middleware - JSON parsing should be first
 app.use(express.json({ limit: '10mb' }));
@@ -30,9 +36,15 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`CORS blocked for origin: ${origin}`));
+    // Allow standard origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Allow any vercel.app preview deployments
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -425,7 +437,7 @@ const connectDB = async () => {
       console.log('MongoDB connected');
       await seedDB(); // Run seeder
     } else {
-      console.log('No MONGO_URI provided, skipping DB connection for now.');
+      throw new Error('MONGO_URI environment variable is missing!');
     }
     
     // Start activity diff processor every minute
