@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/auth.js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, BellOff, Check, Trash2, ShieldCheck, Clock, CheckCircle2, ArrowLeft, LayoutDashboard, CheckSquare } from 'lucide-react';
+import { Bell, BellOff, Trash2, ShieldCheck, Clock, CheckCircle2, ArrowLeft, CheckSquare } from 'lucide-react';
+import '../index.css';
 
 const Notifications = () => {
   const { user } = useAuth();
@@ -79,25 +80,44 @@ const Notifications = () => {
     </div>
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' }
+    }
+  };
+
+
+
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ maxWidth: '950px', margin: '0 auto', padding: '1rem' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      style={{ maxWidth: '1000px', margin: '0 auto', padding: '1rem' }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
+      <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
         <div>
           <h1 style={{ 
             fontSize: '2.5rem', 
             fontWeight: 900, 
-            color: '#fc4c02', 
+            color: 'var(--primary-color)', 
             margin: 0, 
-            textShadow: '0 0 30px rgba(252,76,2,0.3)',
             display: 'flex',
             alignItems: 'center',
             gap: '1rem'
           }}>
-            <Bell size={32} /> Notifications
+            Notifications
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginTop: '0.5rem' }}>
             Stay synced with your fitness journey.
@@ -106,43 +126,45 @@ const Notifications = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button 
-            className="btn btn-secondary" 
-            onClick={() => navigate('/dashboard')}
-            style={{ borderRadius: '12px', padding: '0.75rem 1.25rem' }}
+            className="btn btn-primary" 
+            onClick={handleTest}
+            disabled={submitting}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
-            <LayoutDashboard size={18} /> <span className="hide-sm">Dashboard</span>
+            <ShieldCheck size={16} /> Test
           </button>
-          
+
           <button 
             className="btn btn-secondary" 
             onClick={markAllRead}
             disabled={submitting || !items.some(i => !i.read)}
-            style={{ borderRadius: '12px', padding: '0.75rem 1.25rem' }}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
-            <CheckSquare size={18} /> <span className="hide-sm">Mark All Read</span>
+            <CheckSquare size={16} /> Mark Read
           </button>
 
           <button 
             className="btn btn-secondary" 
             onClick={clearAll}
             disabled={submitting || items.length === 0}
-            style={{ borderRadius: '12px', padding: '0.75rem 1.25rem', color: 'var(--danger-color)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', color: 'var(--danger-color)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
           >
-            <Trash2 size={18} /> <span className="hide-sm">Clear All</span>
+            <Trash2 size={16} /> Clear
           </button>
 
-          <button 
-            className="btn btn-primary" 
-            onClick={handleTest}
-            disabled={submitting}
-            style={{ borderRadius: '12px', padding: '0.75rem 1.25rem' }}
-          >
-            <ShieldCheck size={18} /> <span className="hide-sm">Test</span>
-          </button>
+          <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+            <ArrowLeft size={16} /> Back to Dashboard
+          </Link>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="glass" style={{ minHeight: '500px', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+      <motion.div 
+        variants={itemVariants} 
+        whileHover={{ y: -2, scale: 1.002 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="card" 
+        style={{ minHeight: '500px', padding: '1.5rem' }}
+      >
         <AnimatePresence mode="popLayout">
           {items.length === 0 ? (
             <motion.div 
@@ -151,55 +173,56 @@ const Notifications = () => {
               animate={{ opacity: 1 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px', color: 'var(--text-secondary)' }}
             >
-              <BellOff size={64} style={{ marginBottom: '1.5rem', opacity: 0.2 }} />
-              <h3 style={{ margin: 0, fontWeight: 700 }}>No messages yet</h3>
-              <p style={{ opacity: 0.6 }}>We'll notify you when your progress updates.</p>
+              <BellOff size={64} style={{ marginBottom: '1.5rem', opacity: 0.1 }} />
+              <h3 style={{ margin: 0, fontWeight: 800 }}>All caught up!</h3>
+              <p style={{ opacity: 0.6 }}>No new messages to show.</p>
             </motion.div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {items.map((n, i) => (
-                <motion.div
-                  key={n._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="glass"
-                  style={{ 
-                    padding: '1.5rem', 
-                    borderRadius: '16px',
-                    background: n.read ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.04)',
-                    borderLeft: n.read ? '1px solid rgba(255,255,255,0.05)' : '4px solid #fc4c02',
-                    display: 'flex',
-                    gap: '1.25rem',
-                    alignItems: 'center',
-                    position: 'relative',
-                  }}
-                >
+              {items.map((n) => (
+                  <motion.div
+                    key={n._id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    whileHover={{ x: 5, background: 'rgba(255,255,255,0.06)' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className="card"
+                    style={{ 
+                      padding: '1.25rem', 
+                      background: n.read ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
+                      borderLeft: n.read ? '1px solid rgba(255,255,255,0.1)' : '4px solid var(--primary-color)',
+                      display: 'flex',
+                      gap: '1.25rem',
+                      alignItems: 'center',
+                      cursor: 'default'
+                    }}
+                  >
                   <div style={{ 
-                    width: '48px', 
-                    height: '48px', 
-                    borderRadius: '14px', 
-                    background: n.read ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #fc4c02, #ff7b00)', 
+                    width: '45px', 
+                    height: '45px', 
+                    borderRadius: '12px', 
+                    background: n.read ? 'rgba(255,255,255,0.05)' : 'var(--gradient-primary)', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: n.read ? 'none' : '0 8px 20px rgba(252,76,2,0.3)'
+                    boxShadow: n.read ? 'none' : '0 4px 15px rgba(252,76,2,0.3)'
                   }}>
-                    <Bell size={22} color="white" />
+                    <Bell size={20} color={n.read ? 'var(--text-secondary)' : 'white'} />
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: n.read ? 'var(--text-secondary)' : 'white' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: n.read ? 'var(--text-secondary)' : 'var(--text-primary)' }}>
                         {n.title}
                       </h4>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, opacity: 0.6 }}>
                         <Clock size={14} />
-                        {new Date(n.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : 'Recent'}
                       </div>
                     </div>
-                    <p style={{ margin: '0.5rem 0 0 0', color: n.read ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
+                    <p style={{ margin: '0.4rem 0 0 0', color: n.read ? 'var(--text-secondary)' : 'var(--text-primary)', opacity: n.read ? 0.6 : 0.9, lineHeight: 1.5, fontSize: '0.95rem' }}>
                       {n.message}
                     </p>
                   </div>
@@ -208,10 +231,15 @@ const Notifications = () => {
                     <button 
                       onClick={() => markRead(n._id)}
                       className="btn-icon"
-                      style={{ color: '#fc4c02', background: 'rgba(252,76,2,0.1)', padding: '0.6rem' }}
-                      title="Mark as Read"
+                      style={{ 
+                        color: 'var(--primary-color)', 
+                        background: 'rgba(252, 76, 2, 0.1)', 
+                        border: '1px solid rgba(252, 76, 2, 0.2)',
+                        padding: '0.6rem',
+                        borderRadius: '10px'
+                      }}
                     >
-                      <CheckCircle2 size={20} />
+                      <CheckCircle2 size={18} />
                     </button>
                   )}
                 </motion.div>
@@ -219,7 +247,7 @@ const Notifications = () => {
             </div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

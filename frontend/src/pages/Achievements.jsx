@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Target, Flame, Crown, Star, Lock, CheckCircle, Award, Medal, Zap, ArrowLeft } from 'lucide-react';
+import { Trophy, Target, Flame, Crown, Star, CheckCircle, Award, Medal, Zap, Lock, ArrowLeft } from 'lucide-react';
 import api from '../api';
 
 const Achievements = () => {
@@ -14,14 +14,30 @@ const Achievements = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, challengesRes, leaderboardRes] = await Promise.all([
+        const [profileRes, activeChallengesRes, leaderboardRes, activityRes, allChallengesRes] = await Promise.all([
           api.get('users/profile'),
-          api.get('challenges'),
-          api.get('leaderboard')
+          api.get('challenges/active'),
+          api.get('users/leaderboard'),
+          api.get('activity/user'),
+          api.get('challenges')
         ]);
         setProfile(profileRes.data);
-        setChallenges(challengesRes.data || []);
+        setChallenges(activeChallengesRes.data || []);
         setLeaderboard(leaderboardRes.data || []);
+        
+        // Calculate completed challenges from activity data
+        const activities = activityRes.data || [];
+        const allChallenges = allChallengesRes.data || [];
+        const completedChallenges = activities.filter(activity => 
+          activity.type === 'other' && activity.data?.type === 'challenge_won'
+        );
+        
+        // Update completed challenges count in profile data
+        const updatedProfile = {
+          ...profileRes.data,
+          completedChallengesCount: completedChallenges.length
+        };
+        setProfile(updatedProfile);
       } catch (err) {
         console.error('Error fetching achievements data:', err);
       } finally {
@@ -31,12 +47,15 @@ const Achievements = () => {
     fetchData();
   }, []);
 
+  const xpValue = profile?.xp || 0;
+  const currentLevel = profile?.level || 1;
+
   // Calculate real stats from fetched data
   const userStats = {
-    level: profile?.level || 1,
-    xp: profile?.xp !== undefined ? profile.xp : profile?.points || 0,
+    level: currentLevel,
+    xp: xpValue,
     streak: profile?.streak || 0,
-    challengesCompleted: challenges.filter(c => c.completed).length,
+    challengesCompleted: profile?.completedChallengesCount || 0,
     totalChallenges: challenges.length,
     leaderboardPosition: leaderboard.findIndex(u => u._id === profile?._id) + 1,
     totalUsers: leaderboard.length
@@ -370,6 +389,119 @@ const Achievements = () => {
     }
   ];
 
+  const levelAchievements = [
+    {
+      id: 'level_1',
+      title: 'First Steps',
+      description: 'Reach Level 1 - Beginner',
+      icon: <Star size={24} />,
+      unlocked: userStats.level >= 1,
+      progress: Math.min((userStats.level / 1) * 100, 100),
+      reward: '🌟 Beginner Badge',
+      color: '#10b981',
+      unlocks: ['Basic challenges', 'Profile customization']
+    },
+    {
+      id: 'level_2',
+      title: 'Novice Achiever',
+      description: 'Reach Level 2 - Novice',
+      icon: <Target size={24} />,
+      unlocked: userStats.level >= 2,
+      progress: Math.min((userStats.level / 2) * 100, 100),
+      reward: '💪 Novice Badge + 100 XP',
+      color: '#3b82f6',
+      unlocks: ['Advanced challenge filters', 'Custom workout routines']
+    },
+    {
+      id: 'level_3',
+      title: 'Amateur Status',
+      description: 'Reach Level 3 - Amateur',
+      icon: <Zap size={24} />,
+      unlocked: userStats.level >= 3,
+      progress: Math.min((userStats.level / 3) * 100, 100),
+      reward: '🏃 Amateur Badge + 200 XP',
+      color: '#8b5cf6',
+      unlocks: ['Leaderboard access', 'Achievement tracking']
+    },
+    {
+      id: 'level_4',
+      title: 'Skilled Athlete',
+      description: 'Reach Level 4 - Skilled',
+      icon: <Medal size={24} />,
+      unlocked: userStats.level >= 4,
+      progress: Math.min((userStats.level / 4) * 100, 100),
+      reward: '⭐ Skilled Badge + 300 XP',
+      color: '#06b6d4',
+      unlocks: ['Challenge creation', 'Social features']
+    },
+    {
+      id: 'level_5',
+      title: 'Expert Status',
+      description: 'Reach Level 5 - Expert',
+      icon: <Award size={24} />,
+      unlocked: userStats.level >= 5,
+      progress: Math.min((userStats.level / 5) * 100, 100),
+      reward: '🏆 Expert Badge + 500 XP',
+      color: '#ec4899',
+      unlocks: ['Premium challenges', 'Advanced analytics']
+    },
+    {
+      id: 'level_10',
+      title: 'Master Level',
+      description: 'Reach Level 10 - Master',
+      icon: <Crown size={24} />,
+      unlocked: userStats.level >= 10,
+      progress: Math.min((userStats.level / 10) * 100, 100),
+      reward: '👑 Master Badge + 1000 XP',
+      color: '#f59e0b',
+      unlocks: ['Master challenges', 'Exclusive badges']
+    },
+    {
+      id: 'level_15',
+      title: 'Legend Status',
+      description: 'Reach Level 15 - Legend',
+      icon: <Trophy size={24} />,
+      unlocked: userStats.level >= 15,
+      progress: Math.min((userStats.level / 15) * 100, 100),
+      reward: '🔥 Legend Badge + 2000 XP',
+      color: '#fbbf24',
+      unlocks: ['Legendary challenges', 'Custom avatar frames']
+    },
+    {
+      id: 'level_20',
+      title: 'Elite Athlete',
+      description: 'Reach Level 20 - Elite',
+      icon: <Award size={24} />,
+      unlocked: userStats.level >= 20,
+      progress: Math.min((userStats.level / 20) * 100, 100),
+      reward: '💎 Elite Badge + 3000 XP',
+      color: '#10b981',
+      unlocks: ['Elite tournaments', 'VIP features']
+    },
+    {
+      id: 'level_25',
+      title: 'Champion Status',
+      description: 'Reach Level 25 - Champion',
+      icon: <Medal size={24} />,
+      unlocked: userStats.level >= 25,
+      progress: Math.min((userStats.level / 25) * 100, 100),
+      reward: '🏅 Champion Badge + 5000 XP',
+      color: '#3b82f6',
+      unlocks: ['Championship access', 'Mentorship tools']
+    },
+    {
+      id: 'level_30',
+      title: 'Grandmaster',
+      description: 'Reach Level 30 - Grandmaster',
+      icon: <Crown size={24} />,
+      unlocked: userStats.level >= 30,
+      progress: Math.min((userStats.level / 30) * 100, 100),
+      reward: '🎖️ Grandmaster Badge + 10000 XP',
+      color: '#8b5cf6',
+      unlocks: ['Grandmaster challenges', 'Hall of Fame']
+    }
+  ];
+
   const getAchievementsByTab = () => {
     switch (activeTab) {
       case 'challenges':
@@ -380,6 +512,8 @@ const Achievements = () => {
         return leaderboardAchievements;
       case 'xp':
         return xpAchievements;
+      case 'levels':
+        return levelAchievements;
       default:
         return challengeAchievements;
     }
@@ -404,54 +538,59 @@ const Achievements = () => {
       style={{ maxWidth: '1000px', margin: '0 auto', padding: '1rem' }}
     >
       {/* Header */}
-      <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-        <div style={{ textAlign: 'center', flex: 1 }}>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fc4c02', marginBottom: '0.5rem', textShadow: '0 4px 20px rgba(252,76,2,0.3)' }}>
-            <Trophy size={40} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-            Achievements
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-            Track your progress and unlock rewards as you conquer challenges
-          </p>
-        </div>
-        
-        <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '0.75rem 1.25rem' }}>
-          <ArrowLeft size={18} /> <span className="hide-sm">Dashboard</span>
-        </Link>
+      <motion.div variants={itemVariants} style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fc4c02', marginBottom: '0.5rem', textShadow: '0 4px 20px rgba(252,76,2,0.3)' }}>
+          <Trophy size={40} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+          Achievements
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+          Track your progress and unlock rewards as you conquer challenges
+        </p>
       </motion.div>
 
       {/* Stats Overview */}
-      <motion.div variants={itemVariants} className="glass" style={{ padding: '2rem', marginBottom: '2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.5rem', textAlign: 'center' }}>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fc4c02' }}>{userStats.level}</div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Current Level</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: 900, color: '#10b981' }}>{userStats.xp}</div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Total XP</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: 900, color: '#f59e0b' }}>{userStats.streak}</div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Day Streak</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: 900, color: '#8b5cf6' }}>
-              #{userStats.leaderboardPosition || '--'}
+      <div className="grid-4" style={{ marginBottom: '3rem' }}>
+        {[
+          { label: 'Current Level', value: userStats.level, unit: '', icon: Award, color: '#fc4c02' },
+          { label: 'Total XP Earned', value: userStats.xp.toLocaleString(), unit: 'XP', icon: Zap, color: '#10b981' },
+          { label: 'Current Streak', value: userStats.streak, unit: 'Days', icon: Flame, color: '#f59e0b' },
+          { label: 'Leaderboard', value: `#${userStats.leaderboardPosition || '--'}`, unit: '', icon: Crown, color: '#8b5cf6' }
+        ].map((stat, i) => (
+          <motion.div key={i} variants={itemVariants} className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ 
+              color: stat.color, 
+              background: `${stat.color}20`, 
+              width: '52px', 
+              height: '52px', 
+              borderRadius: '16px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              flexShrink: 0,
+              border: `1px solid ${stat.color}30`
+            }}>
+              <stat.icon size={26} strokeWidth={2.5} />
             </div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Leaderboard</div>
-          </div>
-        </div>
-      </motion.div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', margin: 0, whiteSpace: 'nowrap' }}>{stat.label}</p>
+              <h2 style={{ fontSize: '1.4rem', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                {stat.value}
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.6 }}>{stat.unit}</span>
+              </h2>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
       {/* Tab Navigation */}
-      <motion.div variants={itemVariants} style={{ marginBottom: '2rem' }}>
+      <motion.div variants={itemVariants} style={{ marginBottom: '3rem' }}>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           {[
             { id: 'challenges', label: 'Challenge Achievements', icon: <Target size={18} /> },
             { id: 'streak', label: 'Streak Achievements', icon: <Flame size={18} /> },
             { id: 'leaderboard', label: 'Leaderboard Achievements', icon: <Crown size={18} /> },
-            { id: 'xp', label: 'XP Milestones', icon: <Zap size={18} /> }
+            { id: 'xp', label: 'XP Milestones', icon: <Zap size={18} /> },
+            { id: 'levels', label: 'Level Rewards', icon: <Award size={18} /> }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -466,7 +605,7 @@ const Achievements = () => {
             >
               {tab.icon}
               <span>{tab.label}</span>
-              <span className="badge badge-primary" style={{ marginLeft: '0.5rem' }}>
+              <span className="badge badge-primary" style={{ marginLeft: '0.5rem', background: activeTab === tab.id ? 'rgba(255,255,255,0.2)' : 'var(--primary-color)' }}>
                 {unlockedCount(getAchievementsByTab())}/{totalCount(getAchievementsByTab())}
               </span>
             </button>
@@ -476,20 +615,21 @@ const Achievements = () => {
 
       {/* Achievements Grid */}
       <motion.div variants={itemVariants}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div className="grid-3">
           {getAchievementsByTab().map((achievement) => (
             <motion.div
               key={achievement.id}
-              whileHover={{ scale: 1.02 }}
-              className="glass"
+              variants={itemVariants}
+              className="card"
               style={{
                 padding: '1.5rem',
-                border: achievement.unlocked ? `2px solid ${achievement.color}` : '2px solid rgba(255,255,255,0.1)',
+                border: achievement.unlocked ? `1px solid ${achievement.color}60` : '1px solid rgba(255,255,255,0.15)',
                 background: achievement.unlocked 
-                  ? `linear-gradient(135deg, ${achievement.color}20 0%, transparent 100%)` 
-                  : 'rgba(255,255,255,0.02)',
-                position: 'relative',
-                overflow: 'hidden'
+                  ? `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, ${achievement.color}10 100%)` 
+                  : 'rgba(255,255,255,0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%'
               }}
             >
               {/* Achievement Icon */}

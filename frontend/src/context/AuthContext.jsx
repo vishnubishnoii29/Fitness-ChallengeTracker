@@ -18,7 +18,6 @@ const getStoredUser = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => getStoredUser());
-  const [loading] = useState(false);
 
   const login = async (email, password) => {
     try {
@@ -48,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

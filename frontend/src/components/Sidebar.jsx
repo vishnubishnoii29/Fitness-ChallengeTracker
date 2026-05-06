@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/auth';
-import { LayoutDashboard, Compass, Trophy, Medal, LogOut, Flame, Menu } from 'lucide-react';
+import { useAuth } from '../context/auth.js';
+import { LayoutDashboard, Compass, Trophy, Dumbbell, ListTodo, Medal, Award, Users, LogOut, Flame, Menu } from 'lucide-react';
+import '../index.css';
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const { logout } = useAuth();
@@ -22,7 +23,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       top: 0,
       height: '100vh',
       overflowX: 'hidden',
-      padding: isCollapsed ? '1.5rem 0' : '1.5rem 1.25rem'
+      padding: isCollapsed ? '1.5rem 0' : '1.5rem 1.25rem',
+      zIndex: 1000
     }}>
       {/* Header with Toggle & Logo */}
       <div style={{ 
@@ -30,7 +32,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         alignItems: 'center', 
         justifyContent: isCollapsed ? 'center' : 'flex-start',
         gap: isCollapsed ? '0' : '1rem',
-        marginBottom: '2.5rem',
+        marginBottom: '2rem',
         padding: isCollapsed ? '0' : '0 0.5rem'
       }}>
         <button 
@@ -71,22 +73,38 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         )}
       </div>
 
-      <nav className="nav-links" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: isCollapsed ? 'center' : 'stretch' }}>
+      <nav className="nav-links" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: isCollapsed ? 'center' : 'stretch' }}>
         <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Dashboard">
-          <LayoutDashboard size={22} style={{ flexShrink: 0 }} />
+          <LayoutDashboard size={20} style={{ flexShrink: 0 }} />
           {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Dashboard</span>}
         </NavLink>
         <NavLink to="/explore" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Explore">
-          <Compass size={22} style={{ flexShrink: 0 }} />
+          <Compass size={20} style={{ flexShrink: 0 }} />
           {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Explore</span>}
         </NavLink>
         <NavLink to="/challenges" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Challenges">
-          <Trophy size={22} style={{ flexShrink: 0 }} />
+          <Trophy size={20} style={{ flexShrink: 0 }} />
           {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Challenges</span>}
         </NavLink>
+        <NavLink to="/workouts" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Workouts">
+          <Dumbbell size={20} style={{ flexShrink: 0 }} />
+          {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Workouts</span>}
+        </NavLink>
+        <NavLink to="/routines" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Routines">
+          <ListTodo size={20} style={{ flexShrink: 0 }} />
+          {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Routines</span>}
+        </NavLink>
         <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Leaderboard">
-          <Medal size={22} style={{ flexShrink: 0 }} />
+          <Medal size={20} style={{ flexShrink: 0 }} />
           {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Leaderboard</span>}
+        </NavLink>
+        <NavLink to="/achievements" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Achievements">
+          <Award size={20} style={{ flexShrink: 0 }} />
+          {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Achievements</span>}
+        </NavLink>
+        <NavLink to="/social" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} title="Social">
+          <Users size={20} style={{ flexShrink: 0 }} />
+          {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Social</span>}
         </NavLink>
       </nav>
 

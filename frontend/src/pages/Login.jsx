@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/auth.js';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Flame } from 'lucide-react';
+import '../index.css';
 
 const BG_IMG = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?fm=jpg&q=80&w=3000&auto=format&fit=crop';
 
@@ -23,6 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +34,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     const result = await login(email, password);
+    setLoading(false);
     if (result.success) {
       navigate('/dashboard');
     } else {
@@ -134,19 +138,20 @@ const Login = () => {
 
           <button
             type="submit"
+            disabled={loading}
             style={{
               width: '100%', marginTop: '0.5rem',
               padding: '0.9rem',
-              background: 'linear-gradient(135deg, #fc4c02, #ff7849)',
+              background: loading ? 'rgba(252,76,2,0.5)' : 'linear-gradient(135deg, #fc4c02, #ff7849)',
               color: 'white', fontWeight: 700, fontSize: '1rem',
-              border: 'none', borderRadius: '12px', cursor: 'pointer',
-              boxShadow: '0 6px 24px rgba(252,76,2,0.4)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              border: 'none', borderRadius: '12px', cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: loading ? 'none' : '0 6px 24px rgba(252,76,2,0.4)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 10px 32px rgba(252,76,2,0.6)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(252,76,2,0.4)'; }}
+            onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 10px 32px rgba(252,76,2,0.6)'; } }}
+            onMouseLeave={e => { if (!loading) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(252,76,2,0.4)'; } }}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 

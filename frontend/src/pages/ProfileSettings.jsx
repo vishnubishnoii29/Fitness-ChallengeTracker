@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/auth.js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, Camera, Check, AlertCircle, Save, ChevronLeft, ArrowLeft, Calendar, Ruler, Weight } from 'lucide-react';
+import { User, Lock, Check, AlertCircle, ArrowLeft, Calendar, Ruler, Weight, Flame } from 'lucide-react';
+import '../index.css';
 
 const ProfileSettings = () => {
   const { user: authUser, setUser: setAuthUser } = useAuth();
@@ -112,270 +113,341 @@ const ProfileSettings = () => {
     </div>
   );
 
-  const username = profile.username ? profile.username.replace('@', '') : 'User';
-  const xpValue = profile.xp !== undefined ? profile.xp : profile.points;
+  const username = profile?.username ? profile.username.replace('@', '') : 'User';
+  const xpValue = profile?.xp || 0;
+  const currentLevel = profile?.level || 1;
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' }
+    }
+  };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ maxWidth: '1100px', margin: '0 auto', padding: '1rem' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      style={{ maxWidth: '1200px', margin: '0 auto', padding: '0.5rem 1rem' }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+      <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 900, color: '#fc4c02', marginBottom: '0.5rem', textShadow: '0 4px 20px rgba(252,76,2,0.3)' }}>Settings</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Manage your fitness journey and security.</p>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--primary-color)', marginBottom: '0' }}>Settings</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Manage your fitness journey and security.</p>
         </div>
-        <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '0.75rem 1.25rem' }}>
-          <ArrowLeft size={18} /> <span className="hide-sm">Dashboard</span>
+        <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+          <ArrowLeft size={16} /> Back to Dashboard
         </Link>
-      </div>
+      </motion.div>
 
-      <div className="glass" style={{ padding: '3rem', position: 'relative' }}>
-        <div className="profile-settings-layout">
-          {/* Left Column: Profile Info */}
-          <div className="profile-info-section">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <div className="profile-menu-avatar" style={{ width: '100px', height: '100px', fontSize: '2.5rem', border: '4px solid var(--primary-color)', flexShrink: 0, boxShadow: '0 0 30px rgba(252,76,2,0.3)' }}>
-                {profile.avatar ? (
-                  <img src={profile.avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  username[0]?.toUpperCase()
-                )}
+      <div className="dashboard-grid" style={{ gridTemplateColumns: '1.2fr 2fr', gap: '1rem' }}>
+        {/* Left Column: Profile Info */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <motion.div 
+            variants={itemVariants} 
+            whileHover={{ y: -5, scale: 1.01 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="card" 
+            style={{ padding: '1.25rem' }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '0.75rem' }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  borderRadius: '50%', 
+                  padding: '4px',
+                  background: 'linear-gradient(45deg, var(--primary-color), #ff7849)',
+                  boxShadow: '0 0 30px rgba(252, 76, 2, 0.3)',
+                }}>
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt="avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '4px solid #0a0a0a' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '3rem', fontWeight: 900, border: '4px solid #0a0a0a' }}>
+                      {username[0]?.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  bottom: '5px',
+                  right: '5px',
+                  background: 'var(--primary-color)',
+                  color: 'white',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '3px solid #0a0a0a',
+                  fontWeight: 900,
+                  fontSize: '0.8rem',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
+                }}>
+                  {currentLevel}
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.02em' }}>{username}</h2>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                  <div style={{ color: 'var(--primary-color)', fontWeight: 800, fontSize: '1rem' }}>LVL {profile.level}</div>
-                  <div style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{xpValue ?? 0} XP</div>
+              
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900 }}>{username}</h2>
+                <div style={{ color: 'var(--primary-color)', fontWeight: 800, fontSize: '0.85rem', marginTop: '0' }}>
+                  {(xpValue || 0).toLocaleString()} XP
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Age</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{profile.age || '--'} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>yrs</span></div>
-              </div>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Streak</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--warning-color)' }}>🔥 {profile.streak} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>days</span></div>
-              </div>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Height</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{profile.height || '--'} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>cm</span></div>
-              </div>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Weight</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{profile.weight || '--'} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>kg</span></div>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '1.5rem' }}>
+              {[
+                { label: 'Age', value: profile.age || '--', unit: 'yrs', icon: Calendar, color: '#4f46e5' },
+                { label: 'Streak', value: profile.streak, unit: 'days', icon: Flame, color: '#fc4c02' },
+                { label: 'Height', value: profile.height || '--', unit: 'cm', icon: Ruler, color: '#10b981' },
+                { label: 'Weight', value: profile.weight || '--', unit: 'kg', icon: Weight, color: '#f59e0b' }
+              ].map((stat, i) => (
+                <div key={i} style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 900 }}>
+                    {stat.value}
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.5, marginLeft: '0.25rem' }}>{stat.unit}</span>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div style={{ display: 'grid', gap: '0.75rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginTop: 'auto' }}>
+            <div style={{ display: 'grid', gap: '0.5rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', marginTop: '1rem', fontSize: '0.85rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ opacity: 0.6 }}>Email</span>
-                <span style={{ fontWeight: 500 }}>{profile.email}</span>
+                <span style={{ fontWeight: 600 }}>{profile.email}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ opacity: 0.6 }}>Joined</span>
-                <span>{new Date(profile.createdAt).toLocaleDateString()}</span>
+                <span style={{ fontWeight: 600 }}>{new Date(profile.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
+        </div>
 
-          {/* Right Column: Dynamic Form Section */}
-          <div className="profile-actions-section">
-            <AnimatePresence mode="wait">
-              {view === 'overview' && (
-                <motion.div 
-                  key="overview"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
-                >
-                  <h3 style={{ marginBottom: '0.25rem', fontSize: '1.5rem', fontWeight: 800 }}>Account Access</h3>
-                  <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                    Control your public presence and account security settings from this panel.
-                  </p>
-                  
+        {/* Right Column: Actions */}
+        <motion.div 
+          variants={itemVariants} 
+          whileHover={{ y: -2, scale: 1.002 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="card" 
+          style={{ padding: '1.5rem' }}
+        >
+          <AnimatePresence mode="wait">
+            {view === 'overview' && (
+              <motion.div 
+                key="overview"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+              >
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem' }}>Account Security</h3>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                  Manage your personal information and security settings. Your profile details help us calculate your fitness metrics accurately.
+                </p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <button 
                     className="btn btn-primary" 
                     onClick={() => { setStatus({ type: '', message: '' }); setView('edit'); }}
-                    style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+                    style={{ width: '100%', padding: '1rem', fontSize: '1rem' }}
                   >
-                    <Camera size={20} /> Edit Profile Info
+                    <User size={20} /> Edit Personal Info
                   </button>
                   <button 
                     className="btn btn-secondary" 
                     onClick={() => { setStatus({ type: '', message: '' }); setView('password'); }}
-                    style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+                    style={{ width: '100%', padding: '1rem', fontSize: '1rem' }}
                   >
                     <Lock size={20} /> Change Password
                   </button>
-                </motion.div>
-              )}
+                </div>
+              </motion.div>
+            )}
 
-              {view === 'edit' && (
-                <motion.div 
-                  key="edit"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                    <button onClick={() => setView('overview')} className="btn-icon" style={{ color: 'var(--primary-color)' }}>
-                      <ChevronLeft size={24} />
-                    </button>
-                    <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Edit Identity</h3>
+            {view === 'edit' && (
+              <motion.div 
+                key="edit"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                  <button onClick={() => setView('overview')} style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', padding: 0 }}>
+                    <ArrowLeft size={24} />
+                  </button>
+                  <h3 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 800 }}>Edit Profile</h3>
+                </div>
+
+                <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {status.message && (
+                    <div className={`status-msg ${status.type}`} style={{ padding: '1rem', borderRadius: '12px', background: status.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: status.type === 'success' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      {status.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
+                      {status.message}
+                    </div>
+                  )}
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                    <div className="input-group">
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Username</label>
+                      <div style={{ position: 'relative' }}>
+                        <User size={18} className="input-icon" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                        <input 
+                          type="text" 
+                          className="btn-secondary"
+                          style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                          value={editForm.username}
+                          onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Age</label>
+                      <div style={{ position: 'relative' }}>
+                        <Calendar size={18} className="input-icon" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                        <input 
+                          type="number" 
+                          className="btn-secondary"
+                          style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                          value={editForm.age}
+                          onChange={(e) => setEditForm({...editForm, age: e.target.value})}
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {status.message && (
-                      <div className={`status-msg ${status.type}`}>
-                        {status.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
-                        {status.message}
-                      </div>
-                    )}
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="input-group">
-                        <label>Username</label>
-                        <div style={{ position: 'relative' }}>
-                          <User size={16} className="input-icon" />
-                          <input 
-                            type="text" 
-                            value={editForm.username}
-                            onChange={(e) => setEditForm({...editForm, username: e.target.value})}
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="input-group">
-                        <label>Age</label>
-                        <div style={{ position: 'relative' }}>
-                          <Calendar size={16} className="input-icon" />
-                          <input 
-                            type="number" 
-                            value={editForm.age}
-                            onChange={(e) => setEditForm({...editForm, age: e.target.value})}
-                            required
-                          />
-                        </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                    <div className="input-group">
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Height (cm)</label>
+                      <div style={{ position: 'relative' }}>
+                        <Ruler size={18} className="input-icon" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                        <input 
+                          type="number" 
+                          className="btn-secondary"
+                          style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                          value={editForm.height}
+                          onChange={(e) => setEditForm({...editForm, height: e.target.value})}
+                          required
+                        />
                       </div>
                     </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="input-group">
-                        <label>Height (cm)</label>
-                        <div style={{ position: 'relative' }}>
-                          <Ruler size={16} className="input-icon" />
-                          <input 
-                            type="number" 
-                            value={editForm.height}
-                            onChange={(e) => setEditForm({...editForm, height: e.target.value})}
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="input-group">
-                        <label>Weight (kg)</label>
-                        <div style={{ position: 'relative' }}>
-                          <Weight size={16} className="input-icon" />
-                          <input 
-                            type="number" 
-                            value={editForm.weight}
-                            onChange={(e) => setEditForm({...editForm, weight: e.target.value})}
-                            required
-                          />
-                        </div>
+                    <div className="input-group">
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Weight (kg)</label>
+                      <div style={{ position: 'relative' }}>
+                        <Weight size={18} className="input-icon" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                        <input 
+                          type="number" 
+                          className="btn-secondary"
+                          style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                          value={editForm.weight}
+                          onChange={(e) => setEditForm({...editForm, weight: e.target.value})}
+                          required
+                        />
                       </div>
                     </div>
-
-
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                      <button type="button" className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setView('overview')}>Cancel</button>
-                      <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={submitting}>
-                        {submitting ? 'Saving...' : <><Save size={18} /> Update Info</>}
-                      </button>
-                    </div>
-                  </form>
-                </motion.div>
-              )}
-
-              {view === 'password' && (
-                <motion.div 
-                  key="password"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                    <button onClick={() => setView('overview')} className="btn-icon" style={{ color: 'var(--primary-color)' }}>
-                      <ChevronLeft size={24} />
-                    </button>
-                    <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Update Security</h3>
                   </div>
 
-                  <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                    {status.message && (
-                      <div className={`status-msg ${status.type}`}>
-                        {status.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
-                        {status.message}
-                      </div>
-                    )}
-                    
-                    <div className="input-group">
-                      <div style={{ position: 'relative' }}>
-                        <Lock size={18} className="input-icon" />
-                        <input 
-                          type="password" 
-                          value={passwordForm.currentPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
-                          placeholder="Current Password" 
-                          required
-                        />
-                      </div>
-                    </div>
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setView('overview')}>Cancel</button>
+                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>
+                      {submitting ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
 
-                    <div className="input-group">
-                      <div style={{ position: 'relative' }}>
-                        <Lock size={18} className="input-icon" />
-                        <input 
-                          type="password" 
-                          value={passwordForm.newPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
-                          placeholder="New Password" 
-                          required
-                        />
-                      </div>
-                    </div>
+            {view === 'password' && (
+              <motion.div 
+                key="password"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                  <button onClick={() => setView('overview')} style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', padding: 0 }}>
+                    <ArrowLeft size={24} />
+                  </button>
+                  <h3 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 800 }}>Update Security</h3>
+                </div>
 
-                    <div className="input-group">
-                      <div style={{ position: 'relative' }}>
-                        <Lock size={18} className="input-icon" />
-                        <input 
-                          type="password" 
-                          value={passwordForm.confirmPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
-                          placeholder="Confirm New Password" 
-                          required
-                        />
-                      </div>
+                <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {status.message && (
+                    <div className={`status-msg ${status.type}`} style={{ padding: '1rem', borderRadius: '12px', background: status.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: status.type === 'success' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      {status.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
+                      {status.message}
                     </div>
+                  )}
+                  
+                  <div className="input-group">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Current Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                      <input 
+                        type="password" 
+                        style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                      <button type="button" className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setView('overview')}>Cancel</button>
-                      <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={submitting}>
-                        {submitting ? 'Updating...' : 'Update Password'}
-                      </button>
+                  <div className="input-group">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>New Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                      <input 
+                        type="password" 
+                        style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                        required
+                      />
                     </div>
-                  </form>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+                  </div>
+
+                  <div className="input-group">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Confirm New Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                      <input 
+                        type="password" 
+                        style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', color: 'white' }}
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setView('overview')}>Cancel</button>
+                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>
+                      {submitting ? 'Updating...' : 'Update Password'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </motion.div>
   );

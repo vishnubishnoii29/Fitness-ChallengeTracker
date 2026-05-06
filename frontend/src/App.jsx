@@ -5,8 +5,11 @@ import { useAuth } from './context/auth';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Explore from './pages/Explore';
+import Workouts from './pages/Workouts';
+import Routines from './pages/Routines';
 import Challenges from './pages/Challenges';
 import Leaderboard from './pages/Leaderboard';
+import Social from './pages/Social';
 import ProfileSettings from './pages/ProfileSettings';
 import Notifications from './pages/Notifications';
 import Achievements from './pages/Achievements';
@@ -27,7 +30,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const AppLayout = ({ theme, toggleTheme }) => {
+const AppLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('sidebarCollapsed') === 'true';
   });
@@ -43,8 +46,6 @@ const AppLayout = ({ theme, toggleTheme }) => {
   return (
     <div className="app-container">
       <Sidebar 
-        theme={theme} 
-        toggleTheme={toggleTheme} 
         isCollapsed={isSidebarCollapsed} 
         toggleSidebar={toggleSidebar} 
       />
@@ -55,9 +56,12 @@ const AppLayout = ({ theme, toggleTheme }) => {
       }}>
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/workouts" element={<Workouts />} />
+          <Route path="/routines" element={<Routines />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/challenges" element={<Challenges />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/social" element={<Social />} />
           <Route path="/profile" element={<ProfileSettings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/achievements" element={<Achievements />} />
@@ -69,16 +73,15 @@ const AppLayout = ({ theme, toggleTheme }) => {
 };
 
 function App() {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
-
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
-  };
+    // Prevent browser scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    
+    // Scroll to top on initial load
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <AuthProvider>
@@ -101,7 +104,7 @@ function App() {
             path="/*" 
             element={
               <ProtectedRoute>
-                <AppLayout theme={theme} toggleTheme={toggleTheme} />
+                <AppLayout />
               </ProtectedRoute>
             } 
           />

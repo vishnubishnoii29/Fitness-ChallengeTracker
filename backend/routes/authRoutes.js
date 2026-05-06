@@ -104,7 +104,7 @@ router.post('/login', async (req, res) => {
         level: user.level,
         points: user.points,
         streak: user.streak,
-        trend: Math.random() > 0.5 ? 'up' : 'down', // Mock trend data
+        trend: user.streak > 0 ? 'up' : 'down',
         token: generateToken(user._id),
       });
     } else {

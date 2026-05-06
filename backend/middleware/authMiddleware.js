@@ -27,4 +27,22 @@ const protect = (req, res, next) => {
   return res.status(401).json({ message: 'Not authorized, no token provided' });
 };
 
-module.exports = { protect };
+const optionalProtect = (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+
+    try {
+      if (process.env.JWT_SECRET) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+      }
+    } catch (error) {
+      console.error('Optional token verification failed:', error.message);
+    }
+  }
+  next();
+};
+
+module.exports = { protect, optionalProtect };

@@ -1,52 +1,83 @@
-# FitQuest - Fitness Challenge Tracker
+# 🔥 FitQuest - The Ultimate Gamified Fitness Community
 
-A full-stack MERN application inspired by Strava, featuring a modern, highly engaging, and gamified user experience.
+FitQuest is a premium, full-stack MERN application designed to transform fitness into an addictive, RPG-like experience. Inspired by the competitive spirit of Strava and the engagement of modern gaming, it features a cinematic glassmorphism UI, real-time social interactions, and a robust quadratic progression system.
 
 **Live Demo:** [https://fitness-challenge-tracker-three.vercel.app/](https://fitness-challenge-tracker-three.vercel.app/)
 
-## Features
-- **Vibrant UI**: Built with React and Framer Motion for smooth transitions and card-based layouts.
-- **Dark/Light Mode**: Full CSS variable support for a seamless theme switching experience.
-- **Dashboard**: Real-time stats, interactive charts (Chart.js), and active challenge tracking.
-- **Explore**: Discover new workouts, AI recommendations, and challenges categorized by difficulty and type.
-- **Challenges**: Create, track, and join challenges with specific goals (Distance, Reps, Time) and rewards.
-- **Leaderboard**: Global, Friends, and Weekly rankings with streak and points tracking.
-- **Gamification**: Earn XP, level up, unlock badges, and maintain streaks to stay motivated.
+---
 
-## Tech Stack
-- **Frontend**: React (Vite), React Router, Framer Motion, Chart.js, Lucide React icons.
-- **Backend**: Node.js, Express, MongoDB (Mongoose), JWT authentication.
+## ✨ Core Features
 
-## Deployment Instructions
+### 🎮 Elite Gamification
+- **Quadratic Leveling**: Experience a realistic growth curve where every level feels earned. Powered by a `500 * (L^2 - L)` XP formula.
+- **Achievements & Badges**: Unlock 20+ unique milestones with authoritative backend verification and custom XP rewards.
+- **Data Integrity**: Built-in "Self-Healing" data synchronization ensures your Level, XP, and Stats are always accurate and consistent.
+
+### 🏋️ Unified Workout Hub
+- **Workouts & Routines**: Standalone high-performance pages for one-off sessions and recurring daily habits.
+- **Active Focus**: Cinematic "Active" cards at the top of every page keep your current goals front and center.
+- **Discovery Library**: Browse and start new sessions with a single click, featuring AI-suggested matches.
+
+### 🤝 Advanced Social System
+- **Athlete Community**: Find and connect with fellow users via an intelligent search that tracks friendship status.
+- **Social Cheers**: Motivate your friends with "Cheers" that send instant notifications, keeping the community engaged.
+- **Friend Requests**: Seamless invitation system with real-time acceptance notifications.
+
+### 🤖 AI Heartbeat & Notifications
+- **10-Minute Heartbeat**: An automated background task delivers randomized fitness tips and activity summaries every 10 minutes.
+- **Dynamic Notifications**: Real-time alerts for level-ups, achievement unlocks, and social interactions with bulk management (Mark All Read/Clear All).
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 19 (Vite), Framer Motion for cinematic animations, Chart.js for performance analytics, Lucide React icons.
+- **Backend**: Node.js, Express, MongoDB (Mongoose), JWT (JSON Web Tokens).
+- **Styling**: Vanilla CSS with a bespoke Glassmorphism Design System and CSS Variables for dynamic theming.
+
+---
+
+## 🚀 Deployment
 
 ### Backend (Render)
-1.  Create a new Web Service on [Render](https://render.com/).
-2.  Connect your repository and set the root directory to `backend`.
-3.  Set the build command to `npm install`.
-4.  Set the start command to `npm start`.
-5.  Add the following Environment Variables:
-    -   `MONGO_URI`: Your MongoDB connection string.
-    -   `JWT_SECRET`: A secure random string for JWT.
-    -   `PORT`: `5000` (Render will handle this automatically, but good to have).
+1. Create a new **Web Service** on Render.
+2. Set Root Directory to `backend`.
+3. Build Command: `npm install`.
+4. Start Command: `npm start`.
+5. **Environment Variables**:
+   - `MONGO_URI`: Your MongoDB connection string.
+   - `JWT_SECRET`: A secure random string.
+   - `NODE_ENV`: `production`.
+   - `FRONTEND_URL`: Your Vercel app URL (for CORS).
 
 ### Frontend (Vercel)
-1.  Create a new project on [Vercel](https://vercel.com/).
-2.  Connect your repository and set the root directory to `frontend`.
-3.  Vercel will automatically detect the Vite project.
-4.  Add the following Environment Variable:
-    -   `VITE_API_URL`: `https://fitness-challengetracker-2.onrender.com/api`
-5.  Deploy!
+1. Create a new project and set Root Directory to `frontend`.
+2. Vercel will auto-detect Vite.
+3. **Environment Variable**:
+   - `VITE_API_URL`: `https://your-backend-url.onrender.com/api`
 
-## Local Development
+---
 
-### Backend
-1. `cd backend`
-2. `npm install`
-3. Create a `.env` file based on `.env.example`.
-4. `npm start`
+## 💻 Local Setup
 
-### Frontend
-1. `cd frontend`
-2. `npm install`
-3. Create a `.env` file based on `.env.example`.
-4. `npm run dev`
+1. **Clone the repo**
+2. **Backend**:
+   ```bash
+   cd backend
+   npm install
+   # Create .env with MONGO_URI and JWT_SECRET
+   npm start
+   ```
+3. **Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   # Create .env with VITE_API_URL=http://localhost:5000/api
+   npm run dev
+   ```
+
+---
+
+## 🏆 Credits
+Developed with ❤️ by **Vishnu Bishnoi** for the 4th Semester Web Development Project.
+💪 Keep pushing your limits!

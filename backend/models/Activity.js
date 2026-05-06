@@ -8,4 +8,7 @@ const activitySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+activitySchema.index({ userId: 1, createdAt: -1 });
+activitySchema.index({ processed: 1 });
+
 module.exports = mongoose.model('Activity', activitySchema);

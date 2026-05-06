@@ -109,7 +109,7 @@ const Leaderboard = () => {
           <div style={{ display: 'flex', gap: '4rem', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 'bold' }}>
             <span style={{ width: '80px', textAlign: 'center' }}>LEVEL</span>
             <span style={{ width: '80px', textAlign: 'center' }}>STREAK</span>
-            <span style={{ width: '100px', textAlign: 'right' }}>POINTS</span>
+            <span style={{ width: '100px', textAlign: 'right' }}>TOTAL XP</span>
           </div>
         </div>
 

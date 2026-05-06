@@ -17,17 +17,63 @@ router.get('/', async (req, res) => {
 // Get active challenges for a user
 router.get('/active', protect, async (req, res) => {
   try {
-    // Ideally, this fetches challenges based on logged-in user. We'll return mock active ones from DB.
-    const challenges = await Challenge.find().limit(2);
-    // Add mock progress
-    const activeWithProgress = challenges.map((c, i) => ({
-      ...c.toObject(),
-      progress: i === 0 ? 65 : 40,
-      current: i === 0 ? '65 km' : '12 Days',
-      goal: i === 0 ? '100 km' : '30 Days',
-      daysLeft: i === 0 ? 12 : 18
-    }));
-    res.json(activeWithProgress);
+    // Get the user's active challenges from their profile
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id).populate('activeChallenges.challengeId');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Return only real active challenges
+    const activeChallenges = user.activeChallenges
+      .filter(activeChallenge => activeChallenge.challengeId)
+      .map(activeChallenge => {
+        const challenge = activeChallenge.challengeId;
+        
+        // Calculate days left based on challenge duration
+        const createdDate = new Date(challenge.createdAt || Date.now());
+        const endDate = new Date(createdDate);
+        endDate.setDate(endDate.getDate() + challenge.durationDays);
+        const today = new Date();
+        const daysLeft = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)));
+        
+        // Calculate current progress based on goal type
+        let current = '';
+        let goal = '';
+        
+        switch (challenge.goalType) {
+          case 'Distance':
+            current = `${(activeChallenge.progress * challenge.goalValue / 100).toFixed(1)} km`;
+            goal = `${challenge.goalValue} km`;
+            break;
+          case 'Time':
+            current = `${Math.floor(activeChallenge.progress * challenge.goalValue / 100)} min`;
+            goal = `${challenge.goalValue} min`;
+            break;
+          case 'Consistency':
+            current = `${Math.floor(activeChallenge.progress * challenge.goalValue / 100)} Days`;
+            goal = `${challenge.goalValue} Days`;
+            break;
+          case 'Weight Loss':
+            current = `${Math.floor(activeChallenge.progress * challenge.goalValue / 100)} kcal`;
+            goal = `${challenge.goalValue} kcal`;
+            break;
+          default:
+            current = `${activeChallenge.progress}%`;
+            goal = `${challenge.goalValue}`;
+        }
+        
+        return {
+          ...challenge.toObject(),
+          progress: activeChallenge.progress,
+          current: current,
+          goal: goal,
+          daysLeft: daysLeft
+        };
+      });
+    
+    res.json(activeChallenges);
   } catch (err) {
     console.error('Error fetching active challenges:', err);
     res.status(500).json({ message: 'Error fetching active challenges' });
@@ -89,6 +135,13 @@ router.post('/', protect, async (req, res) => {
     });
 
     const newChallenge = await challenge.save();
+
+    // Automatically join the creator to their own challenge
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: { activeChallenges: { challengeId: newChallenge._id, progress: 0 } }
+    });
+
     res.status(201).json(newChallenge);
   } catch (err) {
     console.error('Challenge creation error:', err);

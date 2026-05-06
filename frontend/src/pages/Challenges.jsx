@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Trophy, Target, Clock, Gift } from 'lucide-react';
+import { Plus, Trophy, Target, Clock, Gift, X, CheckCircle, Zap } from 'lucide-react';
 import api from '../api';
 
 const Challenges = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [levelUpNotification, setLevelUpNotification] = useState(null);
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [availableChallenges, setAvailableChallenges] = useState([]);
   const [error, setError] = useState('');
@@ -16,6 +18,16 @@ const Challenges = () => {
     goalValue: '',
     difficulty: 'Medium'
   });
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setShowCreateModal(true);
+      // Clear state so it doesn't reopen on refresh/back
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleJoinChallenge = async (challengeId) => {
     try {
@@ -34,6 +46,42 @@ const Challenges = () => {
     } catch (err) {
       console.error('Error joining challenge:', err);
       setError('Failed to join challenge. Please try again.');
+    }
+  };
+
+  const handleStopChallenge = async (challengeId) => {
+    try {
+      await api.delete(`users/challenges/${challengeId}/stop`);
+      const [activeRes, allRes] = await Promise.all([
+        api.get('challenges/active'),
+        api.get('challenges')
+      ]);
+      setActiveChallenges(activeRes.data);
+      const activeIds = activeRes.data.map(c => c._id);
+      const available = allRes.data.filter(c => !activeIds.includes(c._id));
+      setAvailableChallenges(available);
+    } catch (err) {
+      console.error('Error stopping challenge:', err);
+    }
+  };
+
+  const handleCompleteChallenge = async (challengeId) => {
+    try {
+      const res = await api.post(`users/challenges/${challengeId}/complete`);
+      const [activeRes, allRes] = await Promise.all([
+        api.get('challenges/active'),
+        api.get('challenges')
+      ]);
+      setActiveChallenges(activeRes.data);
+      const activeIds = activeRes.data.map(c => c._id);
+      const available = allRes.data.filter(c => !activeIds.includes(c._id));
+      setAvailableChallenges(available);
+
+      if (res.data.levelUp?.leveledUp) {
+        setLevelUpNotification(res.data.levelUp);
+      }
+    } catch (err) {
+      console.error('Error completing challenge:', err);
     }
   };
 
@@ -128,12 +176,19 @@ const Challenges = () => {
       initial="hidden"
       animate="visible"
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <motion.div variants={cardVariants}>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem', color: '#fc4c02', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>Challenges</h1>
-          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Push your limits and earn rewards.</p>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary-color)', marginBottom: '0.25rem' }}>Challenges</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Push your limits and earn exclusive rewards.</p>
         </motion.div>
-        <motion.button variants={cardVariants} className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+        <motion.button 
+          variants={cardVariants} 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn btn-primary" 
+          onClick={() => setShowCreateModal(true)}
+          style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}
+        >
           <Plus size={20} /> Create Challenge
         </motion.button>
       </div>
@@ -146,65 +201,99 @@ const Challenges = () => {
         </motion.div>
       )}
 
-      <section style={{ marginBottom: '3rem' }}>
-        <motion.h2 variants={cardVariants} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="var(--primary-color)" /> Active Challenges</motion.h2>
-        <div className="grid-2">
+      <section style={{ marginBottom: '4rem' }}>
+        <motion.h2 variants={cardVariants} style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Target size={24} color="var(--primary-color)" /> Active Challenges
+        </motion.h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
           {activeChallenges.map((c, i) => (
-            <motion.div key={i} variants={cardVariants} className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 0.25rem 0' }}>{c.title}</h3>
-                  <span className="badge badge-primary">{c.goalType}</span>
-                </div>
+            <motion.div 
+              key={i} 
+              variants={cardVariants} 
+              whileHover={{ y: -5 }}
+              className="card" 
+              style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderLeft: '4px solid var(--primary-color)', position: 'relative' }}
+            >
+              <div style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem' }}>{c.title}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>{c.goalType} • {c.daysLeft} days left</p>
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{c.progress}%</span>
+                  <span style={{ color: 'var(--primary-color)', fontWeight: 900, fontSize: '1.25rem' }}>{c.progress}%</span>
                 </div>
               </div>
               
-              <div className="progress-container" style={{ height: '12px', marginBottom: '1rem' }}>
-                <div className="progress-bar" style={{ width: `${c.progress}%` }}></div>
+              <div className="progress-container" style={{ height: '8px', marginBottom: '1.25rem', background: 'rgba(255,255,255,0.05)', borderRadius: '20px' }}>
+                <motion.div 
+                  className="progress-bar" 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${c.progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  style={{ borderRadius: '20px', background: 'var(--gradient-primary)', boxShadow: '0 0 10px rgba(252, 76, 2, 0.4)' }}
+                ></motion.div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontWeight: 600 }}>
                 <span>{c.current} / {c.goal}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} /> {c.daysLeft} days left</span>
+                {c.rewardXP && <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Zap size={14} /> +{c.rewardXP} XP</span>}
               </div>
 
-              <div style={{ padding: '0.75rem', background: 'var(--bg-color)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-                <Gift size={16} color="var(--warning-color)" /> Reward: <strong>{c.rewardXP} XP - {c.rewardBadge}</strong>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button 
+                  className="btn btn-success" 
+                  style={{ flex: 2, justifyContent: 'center', padding: '0.75rem' }}
+                  onClick={() => handleCompleteChallenge(c._id)}
+                >
+                  <CheckCircle size={18} /> Complete
+                </button>
+                <button 
+                  className="btn btn-secondary" 
+                  style={{ flex: 1, justifyContent: 'center', padding: '0.75rem', color: 'var(--danger-color)' }}
+                  onClick={() => handleStopChallenge(c._id)}
+                >
+                  <X size={18} /> Stop
+                </button>
               </div>
             </motion.div>
           ))}
-          {activeChallenges.length === 0 && <motion.p variants={cardVariants}>No active challenges. Join one below!</motion.p>}
+          {activeChallenges.length === 0 && (
+            <motion.div variants={cardVariants} className="card" style={{ padding: '3rem', textAlign: 'center', opacity: 0.5, gridColumn: '1 / -1' }}>
+               <Trophy size={40} style={{ margin: '0 auto 1rem' }} />
+               <p>No active challenges. Ignite your journey below!</p>
+            </motion.div>
+          )}
         </div>
       </section>
 
       <section>
-        <motion.h2 variants={cardVariants} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Trophy color="var(--warning-color)" /> Available Challenges</motion.h2>
-        <div className="grid-3">
+        <motion.h2 variants={cardVariants} style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Trophy size={24} color="#f59e0b" /> Available Challenges
+        </motion.h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {availableChallenges.map((c, i) => (
-            <motion.div key={i} variants={cardVariants} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <span className={`badge ${c.difficulty === 'Easy' ? 'badge-success' : c.difficulty === 'Medium' ? 'badge-warning' : 'badge-primary'}`}>{c.difficulty}</span>
-                <span className="badge" style={{ background: 'var(--bg-color)' }}>{c.goalType}</span>
+            <motion.div 
+              key={i} 
+              variants={cardVariants} 
+              whileHover={{ y: -5, scale: 1.02 }}
+              className="card" 
+              style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>CHALLENGE • {c.goalType}</p>
+                <Trophy size={16} color="rgba(255,255,255,0.2)" />
               </div>
-              <h3 style={{ margin: '0 0 0.5rem 0' }}>{c.title}</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1.5rem 0', flex: 1 }}>
-                Goal: {c.goalValue} {c.goalType === 'Distance' ? 'km' : c.goalType === 'Consistency' ? 'Days' : c.goalType === 'Weight Loss' ? 'kcal' : ''}
+              <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1.3rem', fontWeight: 800 }}>{c.title}</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', margin: '0 0 1.5rem 0', flex: 1, lineHeight: 1.5 }}>
+                {c.description || `Target: ${c.goalValue} ${c.goalType === 'Distance' ? 'km' : 'units'} in ${c.durationDays} days.`}
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Duration:</span> <strong>{c.durationDays} Days</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Reward:</span> <strong style={{ color: 'var(--warning-color)' }}>{c.rewardXP} XP</strong>
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                <span style={{ opacity: 0.6 }}>{c.durationDays} Days</span>
+                <span style={{ color: '#f59e0b', fontWeight: 700 }}>+{c.rewardXP} XP</span>
               </div>
 
               <button 
-                className="btn btn-secondary" 
-                style={{ width: '100%', justifyContent: 'center' }}
+                className="btn btn-primary" 
+                style={{ width: '100%', justifyContent: 'center', padding: '0.8rem' }}
                 onClick={() => handleJoinChallenge(c._id)}
               >
                 Join Challenge
@@ -288,6 +377,35 @@ const Challenges = () => {
         </div>
       )}
 
+      {levelUpNotification && (
+        <motion.div 
+          initial={{ opacity: 0, x: 50, scale: 0.9 }} 
+          animate={{ opacity: 1, x: 0, scale: 1 }} 
+          exit={{ opacity: 0, x: 20, scale: 0.9 }} 
+          style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 4000, width: '320px' }}
+        >
+          <div className="card" style={{ padding: '1.5rem', border: '1px solid var(--primary-color)', background: 'rgba(10, 10, 10, 0.8)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(252,76,2,0.1) 0%, transparent 70%)', zIndex: 0 }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 5px 15px rgba(252,76,2,0.3)' }}>
+                  🎉
+                </div>
+                <button onClick={() => setLevelUpNotification(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.25rem', color: 'white' }}>Level Up!</h2>
+              <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                You've reached <span style={{ color: 'var(--primary-color)', fontWeight: 800 }}>Level {levelUpNotification.newLevel}</span>
+              </p>
+              <button onClick={() => setLevelUpNotification(null)} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.75rem', borderRadius: '10px' }}>
+                Awesome!
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };
