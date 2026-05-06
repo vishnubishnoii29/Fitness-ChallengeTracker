@@ -1,9 +1,12 @@
 import axios from 'axios';
 
-// VITE_API_URL already includes /api (e.g. https://...onrender.com/api)
-// Just strip any trailing slashes and add exactly one
+// Accept either a root backend URL (https://...onrender.com)
+// or one that already includes /api (https://...onrender.com/api).
 const RAW_URL = import.meta.env.VITE_API_URL || '/api';
-const API_URL = RAW_URL.replace(/\/+$/, '') + '/';
+const NORMALIZED_URL = RAW_URL.replace(/\/+$/, '');
+const API_URL = NORMALIZED_URL.endsWith('/api')
+  ? `${NORMALIZED_URL}/`
+  : `${NORMALIZED_URL}/api/`;
 
 const api = axios.create({
   baseURL: API_URL,
