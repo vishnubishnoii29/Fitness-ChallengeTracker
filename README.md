@@ -11,21 +11,26 @@ FitQuest is a premium, full-stack MERN application designed to transform fitness
 ### 🎮 Elite Gamification
 - **Quadratic Leveling**: Experience a realistic growth curve where every level feels earned. Powered by a `500 * (L^2 - L)` XP formula.
 - **Achievements & Badges**: Unlock 20+ unique milestones with authoritative backend verification and custom XP rewards.
-- **Data Integrity**: Built-in "Self-Healing" data synchronization ensures your Level, XP, and Stats are always accurate and consistent.
+- **Data Integrity & Self-Healing**: Automated background logic synchronizes XP/Points and prunes dead activity references, ensuring a crash-free experience.
 
-### 🏋️ Unified Workout Hub
-- **Workouts & Routines**: Standalone high-performance pages for one-off sessions and recurring daily habits.
-- **Active Focus**: Cinematic "Active" cards at the top of every page keep your current goals front and center.
-- **Discovery Library**: Browse and start new sessions with a single click, featuring AI-suggested matches.
+### 🛠️ Custom Content Creation
+- **Create & Start**: Effortlessly build your own Workouts, Routines, and Challenges.
+- **Auto-Activation**: Content you create is automatically started for you, appearing instantly on your Dashboard.
+- **Expanding Ecosystem**: Support for specialized types like **Mindfulness**, **Wellness**, and **Consistency**.
+
+### 🏋️ Unified Visual Language
+- **Pixel-Perfect Sync**: Every page shares a strictly synchronized design language, from the **4px left-accent active cards** to the **grid-based library layouts**.
+- **Active Focus**: Cinematic "Active" sections at the top of every page keep your current goals front and center.
+- **High-End Aesthetics**: Pure glassmorphism with backdrop blurring and fluid Framer Motion transitions.
 
 ### 🤝 Advanced Social System
-- **Athlete Community**: Find and connect with fellow users via an intelligent search that tracks friendship status.
-- **Social Cheers**: Motivate your friends with "Cheers" that send instant notifications, keeping the community engaged.
-- **Friend Requests**: Seamless invitation system with real-time acceptance notifications.
+- **Athlete Community**: Intelligently search and connect with fellow users.
+- **Social Cheers**: Motivate friends with "Cheers" that send instant notifications.
+- **Real-time Interactions**: Live updates for level-ups and achievement unlocks shared across the platform.
 
 ### 🤖 AI Heartbeat & Notifications
-- **10-Minute Heartbeat**: An automated background task delivers randomized fitness tips and activity summaries every 10 minutes.
-- **Dynamic Notifications**: Real-time alerts for level-ups, achievement unlocks, and social interactions with bulk management (Mark All Read/Clear All).
+- **10-Minute Heartbeat**: A precision background task that delivers curated fitness tips and updates every 10 minutes.
+- **Dynamic Notifications**: Integrated alert center for all social and progress events with bulk management.
 
 ---
 
