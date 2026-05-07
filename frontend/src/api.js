@@ -22,10 +22,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle unauthorized responses (401)
+// Handle responses and global errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle unauthorized responses (401)
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('user');
       // If we are not on login/register/landing, redirect to login
@@ -33,6 +34,28 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    let exactError = error.message;
+    let details = '';
+
+    if (error.response) {
+      exactError = error.response.data?.message || error.response.statusText || 'Server Error';
+      details = typeof error.response.data === 'object' ? JSON.stringify(error.response.data, null, 2) : String(error.response.data);
+    } else if (error.request) {
+      exactError = 'Network Error: No response received from server';
+    }
+
+    const errorContext = error.config ? `[${error.config.method?.toUpperCase()}] ${error.config.url}` : 'Unknown request';
+
+    // Dispatch global error event
+    window.dispatchEvent(new CustomEvent('app-error', { 
+      detail: { 
+        message: exactError,
+        details: details,
+        context: errorContext
+      } 
+    }));
+
     return Promise.reject(error);
   }
 );

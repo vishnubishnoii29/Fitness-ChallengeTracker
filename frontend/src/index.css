@@ -67,9 +67,9 @@ button {
   /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  -moz-backdrop-filter: blur(16px) saturate(180%);
-  -ms-backdrop-filter: blur(16px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
@@ -184,9 +184,9 @@ h6 {
   /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(14px) saturate(180%);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  -moz-backdrop-filter: blur(14px) saturate(180%);
-  -ms-backdrop-filter: blur(14px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 1;
@@ -260,9 +260,9 @@ h6 {
   background: rgba(239, 68, 68, 0.15);
   /* Glass effect with all vendor prefixes */
   backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  -moz-backdrop-filter: blur(12px) saturate(180%);
-  -ms-backdrop-filter: blur(12px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(239, 68, 68, 0.25);
   color: #ff8e8e;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -280,9 +280,9 @@ h6 {
   background: rgba(16, 185, 129, 0.15);
   /* Glass effect with all vendor prefixes */
   backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  -moz-backdrop-filter: blur(12px) saturate(180%);
-  -ms-backdrop-filter: blur(12px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(16, 185, 129, 0.25);
   color: #6ee7b7;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -304,9 +304,9 @@ h6 {
   /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(14px) saturate(180%);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  -moz-backdrop-filter: blur(14px) saturate(180%);
-  -ms-backdrop-filter: blur(14px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
   color: var(--text-primary);
@@ -391,9 +391,9 @@ h6 {
   /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  -moz-backdrop-filter: blur(16px) saturate(180%);
-  -ms-backdrop-filter: blur(16px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   z-index: 1000;
@@ -557,9 +557,9 @@ h6 {
   /* Glass effect with all vendor prefixes */
   background: rgba(10, 10, 10, 0.28);
   backdrop-filter: blur(14px) saturate(180%);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  -moz-backdrop-filter: blur(14px) saturate(180%);
-  -ms-backdrop-filter: blur(14px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
   /* Performance optimization */
@@ -682,9 +682,9 @@ h6 {
   background-color: rgba(255, 255, 255, 0.08);
   /* Glass effect with all vendor prefixes */
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  -moz-backdrop-filter: blur(20px) saturate(180%);
-  -ms-backdrop-filter: blur(20px) saturate(180%);
+  
+  
+  
   border-right: 1px solid var(--border-color);
   padding: 2rem 1.25rem;
   display: flex;
@@ -737,9 +737,9 @@ h6 {
   /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  -moz-backdrop-filter: blur(16px) saturate(180%);
-  -ms-backdrop-filter: blur(16px) saturate(180%);
+  
+  
+  
   transform: translateZ(0);
   /* Performance optimization */
   will-change: backdrop-filter;
@@ -931,9 +931,9 @@ h6 {
   /* Glass effect with all vendor prefixes */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  -moz-backdrop-filter: blur(16px) saturate(180%);
-  -ms-backdrop-filter: blur(16px) saturate(180%);
+  
+  
+  
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 

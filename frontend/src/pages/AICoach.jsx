@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, Sparkles, Trash2, Zap, Activity, Info } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import api from '../api';
 import '../index.css';
 
 const AICoach = () => {
@@ -47,19 +46,61 @@ const AICoach = () => {
     setInput('');
     setLoading(true);
 
+    // Placeholder for AI response
+    setMessages(prev => [...prev, { role: 'model', content: '' }]);
+
     try {
-      const response = await api.post('ai/chat', { 
-        message: userMessage,
-        history: history
+      // Correctly get the token from the stored user object
+      const storedUser = localStorage.getItem('user');
+      const token = storedUser ? JSON.parse(storedUser).token : null;
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://fitness-challengetracker-2.onrender.com/api'}/ai/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ message: userMessage, history: history })
       });
-      setMessages(prev => [...prev, { role: 'model', content: response.data.message }]);
+
+      if (!response.ok) throw new Error('Stream request failed');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') break;
+            
+            try {
+              const { text } = JSON.parse(data);
+              // Update the last message in real-time by appending text
+              setMessages(prev => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1].content += text;
+                return newMessages;
+              });
+            } catch (e) {
+              console.error('Error parsing stream chunk:', e);
+            }
+          }
+        }
+      }
     } catch (err) {
-      console.error('AI Chat Error:', err);
-      const errorMessage = err.response?.data?.message || err.message || "Connection failed";
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        content: `I'm having trouble connecting to my fitness database (${errorMessage}). Please try again in a moment!` 
-      }]);
+      console.error('AI Chat Stream Error:', err);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1].content = "I'm having trouble connecting to my fitness database. Please check your network or API key!";
+        return newMessages;
+      });
     } finally {
       setLoading(false);
     }

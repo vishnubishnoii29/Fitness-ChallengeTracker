@@ -120,6 +120,8 @@ const Dashboard = () => {
         setAiInsight(aiRes.data.insight);
       } catch (err) {
         console.error('Error fetching AI insight:', err);
+        const exactError = err.response?.data?.message || err.message;
+        setAiInsight(`AI Error: ${exactError}`);
       } finally {
         setLoadingAI(false);
       }

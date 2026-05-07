@@ -51,6 +51,9 @@ const Explore = () => {
           ]);
           
           const recommendationsData = recRes.status === 'fulfilled' ? recRes.value.data : [];
+          if (recRes.status === 'rejected') {
+            setNotification({ type: 'error', message: recRes.reason?.response?.data?.message || 'Failed to load AI recommendations' });
+          }
           const workoutsData = workoutRes.status === 'fulfilled' ? workoutRes.value.data : [];
           const challengesData = challengeRes.status === 'fulfilled' ? challengeRes.value.data : [];
 

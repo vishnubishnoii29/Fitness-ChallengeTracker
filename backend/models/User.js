@@ -37,7 +37,9 @@ const userSchema = new mongoose.Schema({
   }],
   createdAt: { type: Date, default: Date.now },
   dailyRecommendations: { type: Array, default: [] },
-  recommendationsDate: { type: String, default: "" } // Store as YYYY-MM-DD
+  recommendationsDate: { type: String, default: "" }, // Store as YYYY-MM-DD
+  dailyInsight: { type: String, default: "" },
+  insightDate: { type: String, default: "" }
 });
 
 userSchema.index({ points: -1 });

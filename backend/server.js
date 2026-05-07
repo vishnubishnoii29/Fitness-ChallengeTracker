@@ -103,10 +103,14 @@ app.get('/api/add-more-content', async (req, res) => {
   }
 });
 
-// Basic Error Handling
+// Detailed Error Handling
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!', error: err.message });
+  console.error('Unhandled Error:', err.stack);
+  res.status(500).json({ 
+    message: err.message || 'An unexpected error occurred on the server.', 
+    error: err.message,
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined 
+  });
 });
 
 // Seed Database Function
