@@ -35,11 +35,12 @@ const ProtectedRoute = ({ children }) => {
 
 const AppLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    return localStorage.getItem('sidebarCollapsed') === 'true';
+    const saved = localStorage.getItem('sidebar_preference');
+    return saved === null ? true : saved === 'true';
   });
 
   useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+    localStorage.setItem('sidebar_preference', String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
   const toggleSidebar = () => {
@@ -82,22 +83,22 @@ const GlobalErrorOverlay = () => {
   useEffect(() => {
     const handleError = (e) => {
       setErrorData(e.detail);
+      // Auto-dismiss after 6 seconds
+      const timer = setTimeout(() => setErrorData(null), 6000);
+      return () => clearTimeout(timer);
     };
     window.addEventListener('app-error', handleError);
     
-    // Also catch unhandled promises and errors globally
     const handleGlobalError = (event) => {
       setErrorData({
         message: event.message || 'A runtime error occurred',
-        context: 'Global Runtime Error',
-        details: event.error?.stack || ''
+        context: 'Global Runtime Error'
       });
     };
     const handleUnhandledRejection = (event) => {
       setErrorData({
         message: event.reason?.message || 'Unhandled Promise Rejection',
-        context: 'Global Promise Rejection',
-        details: event.reason?.stack || JSON.stringify(event.reason)
+        context: 'Global Promise Rejection'
       });
     };
 
@@ -115,94 +116,73 @@ const GlobalErrorOverlay = () => {
     <AnimatePresence>
       {errorData && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, x: 100, y: 0, scale: 0.9 }}
+          animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 50, scale: 0.9 }}
           style={{
             position: 'fixed',
-            inset: 0,
+            bottom: '2rem',
+            right: '2rem',
             zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(10px)',
-            padding: '2rem'
+            gap: '1rem',
+            padding: '1rem 1.5rem',
+            background: 'rgba(26, 26, 26, 0.9)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderRadius: '16px',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            color: 'white',
+            maxWidth: '400px',
+            cursor: 'pointer'
           }}
+          onClick={() => setErrorData(null)}
         >
-          <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            style={{
-              background: '#1a1a1a',
-              border: '1px solid #ef4444',
-              borderRadius: '16px',
-              padding: '2rem',
-              maxWidth: '800px',
-              width: '100%',
-              boxShadow: '0 25px 50px -12px rgba(239, 68, 68, 0.4)',
-              color: 'white',
-              maxHeight: '90vh',
-              overflowY: 'auto'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', color: '#ef4444' }}>
-              <AlertCircle size={32} />
-              <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>System Error Detected</h2>
-              <button 
-                onClick={() => setErrorData(null)}
-                style={{ marginLeft: 'auto', background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px' }}
-              >
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#fca5a5' }}>Error Message</h3>
-              <p style={{ background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #ef4444', margin: 0, fontSize: '1.1rem', fontWeight: 500 }}>
-                {errorData.message || 'An unknown error occurred.'}
-              </p>
-            </div>
-
+          <div style={{ 
+            background: 'rgba(239, 68, 68, 0.15)', 
+            padding: '10px', 
+            borderRadius: '12px', 
+            color: '#ef4444',
+            display: 'flex'
+          }}>
+            <AlertCircle size={24} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontWeight: 800, fontSize: '0.9rem', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>
+              System Notice
+            </p>
+            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, opacity: 0.9, lineHeight: '1.4' }}>
+              {errorData.message || 'An unexpected error occurred.'}
+            </p>
             {errorData.context && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Context / Endpoint</h3>
-                <code style={{ display: 'block', background: '#0a0a0a', padding: '0.75rem', borderRadius: '8px', color: '#fbbf24', border: '1px solid #374151' }}>
-                  {errorData.context}
-                </code>
-              </div>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontFamily: 'monospace' }}>
+                {errorData.context}
+              </p>
             )}
+          </div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setErrorData(null); }}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px' }}
+          >
+            <X size={18} />
+          </button>
 
-            {errorData.details && (
-              <div>
-                <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>Exact Error Details</h3>
-                <pre style={{ 
-                  background: '#0a0a0a', 
-                  padding: '1rem', 
-                  borderRadius: '8px', 
-                  overflowX: 'auto',
-                  color: '#9ca3af',
-                  fontSize: '0.9rem',
-                  border: '1px solid #374151',
-                  margin: 0,
-                  whiteSpace: 'pre-wrap'
-                }}>
-                  {errorData.details}
-                </pre>
-              </div>
-            )}
-            
-            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-              <button 
-                onClick={() => setErrorData(null)}
-                className="btn btn-primary"
-                style={{ background: '#ef4444', border: 'none' }}
-              >
-                Dismiss Error
-              </button>
-            </div>
-          </motion.div>
+          {/* Progress bar timer */}
+          <motion.div 
+            initial={{ width: '100%' }}
+            animate={{ width: '0%' }}
+            transition={{ duration: 6, ease: 'linear' }}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              height: '3px',
+              background: '#ef4444',
+              borderRadius: '0 0 0 16px'
+            }}
+          />
         </motion.div>
       )}
     </AnimatePresence>

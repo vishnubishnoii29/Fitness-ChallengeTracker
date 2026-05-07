@@ -10,6 +10,10 @@ const callAI = async (messages) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey || apiKey.includes('your_')) throw new Error("Missing or invalid OpenRouter API Key.");
 
+  // Add a timeout to prevent hanging requests (which cause 502 errors on proxies like Vercel/Render)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -21,17 +25,24 @@ const callAI = async (messages) => {
         "model": "openrouter/free",
         "messages": messages,
         "max_tokens": 250
-      })
+      }),
+      signal: controller.signal
     });
 
     if (!response.ok) {
-      throw new Error(`OpenRouter API responded with ${response.status} ${response.statusText}`);
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`OpenRouter API responded with ${response.status}: ${errorBody.slice(0, 100)}`);
     }
 
     const data = await response.json();
     return data.choices?.[0]?.message?.content || null;
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error("AI request timed out. Please try again.");
+    }
     throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
 };
 
@@ -152,6 +163,10 @@ router.get('/insights', auth, async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
 
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     const today = new Date().toISOString().split('T')[0];
     if (user.insightDate === today && user.dailyInsight) {
       console.log(`[AI Insights] Serving cached insight for user ${user.username}`);
@@ -180,7 +195,11 @@ router.get('/insights', auth, async (req, res) => {
     res.json({ insight: finalInsight });
   } catch (err) {
     console.error('[AI Insights Error]:', err);
-    res.status(500).json({ message: `AI Connection Error: ${err.message}` });
+    // Fallback gracefully instead of 500 to avoid scary UI overlays for non-critical features
+    res.json({ 
+      insight: `Keep up the great work! You're on a ${req.user.streak || 1}-day streak and doing amazing.`,
+      isFallback: true 
+    });
   }
 });
 
@@ -246,11 +265,18 @@ Return JSON array of 4 best workouts: [{"id":num,"reason":"short","match":"95%"}
       res.json(finalRecommendations.length > 0 ? finalRecommendations : await Workout.find({ isRecommended: true }).limit(4));
     } catch (parseErr) {
       console.error('AI Recommendation Parse Error:', parseErr);
-      return res.status(500).json({ message: `AI Parse Error: ${parseErr.message}` });
+      const fallbackWorkouts = await Workout.find({ isRecommended: true }).limit(4);
+      return res.json(fallbackWorkouts.map(w => ({ ...w.toObject(), match: '90%', aiReason: 'Recommended based on popular workouts.' })));
     }
   } catch (err) {
     console.error('[AI Recommendations Error]:', err);
-    return res.status(500).json({ message: `AI Connection Error: ${err.message}` });
+    // Fallback gracefully instead of 500
+    const fallbackWorkouts = await Workout.find({ isRecommended: true }).limit(4);
+    res.json(fallbackWorkouts.map(w => ({ 
+      ...w.toObject(), 
+      match: '90%', 
+      aiReason: 'Recommended for your fitness level.' 
+    })));
   }
 });
 

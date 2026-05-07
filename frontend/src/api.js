@@ -45,6 +45,11 @@ api.interceptors.response.use(
       exactError = 'Network Error: No response received from server';
     }
 
+    // Allow specific requests to skip the global error overlay (e.g. non-critical AI features)
+    if (error.config && error.config._silent) {
+      return Promise.reject(error);
+    }
+
     const errorContext = error.config ? `[${error.config.method?.toUpperCase()}] ${error.config.url}` : 'Unknown request';
 
     // Dispatch global error event

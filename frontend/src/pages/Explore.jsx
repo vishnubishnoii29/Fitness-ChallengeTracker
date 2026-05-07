@@ -45,7 +45,7 @@ const Explore = () => {
       const fetchExploreData = async () => {
         try {
           const [recRes, workoutRes, challengeRes] = await Promise.allSettled([
-            api.get('ai/recommendations'),
+            api.get('ai/recommendations', { _silent: true }),
             api.get('workouts'),
             api.get('challenges')
           ]);

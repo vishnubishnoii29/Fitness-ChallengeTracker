@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Flame, Trophy, Zap, TrendingUp, Calendar, Plus, X, CheckCircle, Target, Sparkles } from 'lucide-react';
+import { Activity, Flame, Trophy, Zap, TrendingUp, Calendar, Plus, X, CheckCircle, Target, Sparkles, AlertCircle } from 'lucide-react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth.js';
@@ -115,7 +115,7 @@ const Dashboard = () => {
       // Fetch AI Insight
       setLoadingAI(true);
       try {
-        const aiRes = await api.get('ai/insights');
+        const aiRes = await api.get('ai/insights', { _silent: true });
         console.log('[DEBUG] Dashboard AI Insight response:', aiRes.data);
         setAiInsight(aiRes.data.insight);
       } catch (err) {
@@ -275,15 +275,15 @@ const Dashboard = () => {
   };
 
   if (error) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'white', textAlign: 'center', padding: '2rem' }}>
-      <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.2)', maxWidth: '400px' }}>
-        <X size={48} color="var(--danger-color)" style={{ marginBottom: '1rem' }} />
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Oops!</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{error}</p>
-        <button onClick={() => { setError(null); fetchData(); }} className="btn btn-primary" style={{ width: '100%' }}>
-          Try Again
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40vh', color: 'white' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="card" style={{ padding: '1.5rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)', maxWidth: '350px' }}>
+        <AlertCircle size={32} color="#ef4444" style={{ marginBottom: '0.75rem' }} />
+        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>Connection Issue</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>{error}</p>
+        <button onClick={() => { setError(null); fetchData(); }} className="btn btn-primary" style={{ background: '#ef4444', border: 'none', width: '100%' }}>
+          Reconnect
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 

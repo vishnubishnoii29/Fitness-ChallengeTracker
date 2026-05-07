@@ -458,6 +458,9 @@ const connectDB = async () => {
         const hasValidKey = openRouterKey && openRouterKey.length > 10;
         
         if (hasValidKey) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout for background task
+
           try {
             const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
               method: "POST",
@@ -471,12 +474,19 @@ const connectDB = async () => {
                   { role: "user", content: "Generate a short, one-sentence, highly motivational fitness tip or fun fact." }
                 ],
                 "max_tokens": 150
-              })
+              }),
+              signal: controller.signal
             });
-            const aiData = await aiRes.json();
-            globalAITip = aiData.choices?.[0]?.message?.content || "";
+            if (aiRes.ok) {
+              const aiData = await aiRes.json();
+              globalAITip = aiData.choices?.[0]?.message?.content || "";
+            } else {
+              console.warn(`[Background Task] OpenRouter responded with ${aiRes.status}`);
+            }
           } catch (aiErr) {
-            console.error('Heartbeat OpenRouter error:', aiErr.message);
+            console.error('Heartbeat OpenRouter error:', aiErr.name === 'AbortError' ? 'Timed out' : aiErr.message);
+          } finally {
+            clearTimeout(timeoutId);
           }
         }
 
@@ -522,7 +532,6 @@ const connectDB = async () => {
               message,
               read: false
             });
-            console.log(`[Background Task] Notification sent to ${user.username}`);
           } catch (userErr) {
             console.error(`[Background Task] Failed for user ${user.username}:`, userErr.message);
           }
