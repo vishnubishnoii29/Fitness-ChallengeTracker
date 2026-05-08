@@ -27,6 +27,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 const allowedOrigins = [
+  'https://fitness-challenge-tracker-beta.vercel.app',
   'https://fitness-challenge-tracker-three.vercel.app',
   process.env.FRONTEND_URL,
   'http://localhost:5173',

@@ -3,12 +3,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, Sparkles, Trash2, Zap, Activity, Info } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { apiBaseURL } from '../api';
 import '../index.css';
+
+const getStoredToken = () => {
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) return null;
+
+  try {
+    return JSON.parse(storedUser).token || null;
+  } catch (error) {
+    console.error('Failed to parse stored user data:', error);
+    localStorage.removeItem('user');
+    return null;
+  }
+};
 
 const AICoach = () => {
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('chatHistory');
-    return saved ? JSON.parse(saved) : [
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (error) {
+        console.error('Failed to parse chat history:', error);
+        localStorage.removeItem('chatHistory');
+      }
+    }
+
+    return [
       { 
         role: 'model', 
         content: "👋 Hello! I'm your FitQuest AI Coach. I've analyzed your fitness metrics and I'm ready to help you reach Level 50! What's on your mind today?" 
@@ -50,16 +73,18 @@ const AICoach = () => {
     setMessages(prev => [...prev, { role: 'model', content: '' }]);
 
     try {
-      // Correctly get the token from the stored user object
-      const storedUser = localStorage.getItem('user');
-      const token = storedUser ? JSON.parse(storedUser).token : null;
+      const token = getStoredToken();
+      const headers = {
+        'Content-Type': 'application/json'
+      };
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://fitness-challengetracker-2.onrender.com/api'}/ai/chat/stream`, {
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${apiBaseURL}ai/chat/stream`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify({ message: userMessage, history: history })
       });
 

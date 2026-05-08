@@ -8,6 +8,8 @@ const API_URL = NORMALIZED_URL.endsWith('/api')
   ? `${NORMALIZED_URL}/`
   : `${NORMALIZED_URL}/api/`;
 
+export const apiBaseURL = API_URL;
+
 const api = axios.create({
   baseURL: API_URL,
 });
@@ -16,8 +18,15 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const user = localStorage.getItem('user');
   if (user) {
-    const token = JSON.parse(user).token;
-    config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = JSON.parse(user).token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Failed to parse stored user data:', error);
+      localStorage.removeItem('user');
+    }
   }
   return config;
 });
