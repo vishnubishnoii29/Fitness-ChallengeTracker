@@ -40,6 +40,7 @@ const AICoach = () => {
   });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const messagesEndRef = useRef(null);
 
   const suggestedPrompts = [
@@ -132,12 +133,15 @@ const AICoach = () => {
   };
 
   const clearChat = () => {
-    if (window.confirm('Are you sure you want to clear your chat history?')) {
-      setMessages([{ 
-        role: 'model', 
-        content: "History cleared! How can I help you today?" 
-      }]);
-    }
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearChat = () => {
+    setMessages([{ 
+      role: 'model', 
+      content: "History cleared! How can I help you today?" 
+    }]);
+    setShowClearConfirm(false);
   };
 
   return (
@@ -381,6 +385,85 @@ const AICoach = () => {
             </button>
           </form>
         </div>
+
+        {/* Custom Confirmation Modal */}
+        <AnimatePresence>
+          {showClearConfirm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(5px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: '1rem'
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                style={{
+                  background: 'var(--card-bg, #1a1a1a)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '16px',
+                  padding: '2rem',
+                  maxWidth: '400px',
+                  width: '100%',
+                  textAlign: 'center',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+                }}
+              >
+                <div style={{
+                  width: '48px', height: '48px', borderRadius: '50%',
+                  background: 'rgba(252, 76, 2, 0.1)', color: 'var(--danger-color)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 1rem auto'
+                }}>
+                  <Trash2 size={24} />
+                </div>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: 'white', fontWeight: 800 }}>Clear Chat History?</h3>
+                <p style={{ color: 'var(--text-secondary)', margin: '0 0 1.5rem 0', fontSize: '0.95rem' }}>
+                  This action cannot be undone. All your conversations with the AI Coach will be permanently deleted.
+                </p>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button 
+                    onClick={() => setShowClearConfirm(false)}
+                    style={{
+                      flex: 1, padding: '0.8rem', borderRadius: '8px',
+                      background: 'rgba(255, 255, 255, 0.05)', color: 'white',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      fontWeight: 600, cursor: 'pointer', transition: '0.2s'
+                    }}
+                    onMouseEnter={e => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
+                    onMouseLeave={e => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={confirmClearChat}
+                    style={{
+                      flex: 1, padding: '0.8rem', borderRadius: '8px',
+                      background: 'var(--danger-color)', color: 'white',
+                      border: 'none', fontWeight: 600, cursor: 'pointer', transition: '0.2s'
+                    }}
+                    onMouseEnter={e => e.target.style.opacity = 0.8}
+                    onMouseLeave={e => e.target.style.opacity = 1}
+                  >
+                    Clear History
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </motion.div>
 
       <style>{`
