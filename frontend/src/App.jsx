@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, X } from 'lucide-react';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/auth';
 import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
-import Explore from './pages/Explore';
-import Workouts from './pages/Workouts';
-import Routines from './pages/Routines';
-import Challenges from './pages/Challenges';
-import Leaderboard from './pages/Leaderboard';
-import Social from './pages/Social';
-import ProfileSettings from './pages/ProfileSettings';
-import Notifications from './pages/Notifications';
-import Achievements from './pages/Achievements';
-import AICoach from './pages/AICoach';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import LandingPage from './pages/LandingPage';
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Explore = lazy(() => import('./pages/Explore'));
+const Workouts = lazy(() => import('./pages/Workouts'));
+const Routines = lazy(() => import('./pages/Routines'));
+const Challenges = lazy(() => import('./pages/Challenges'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const Social = lazy(() => import('./pages/Social'));
+const ProfileSettings = lazy(() => import('./pages/ProfileSettings'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Achievements = lazy(() => import('./pages/Achievements'));
+const AICoach = lazy(() => import('./pages/AICoach'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -215,6 +215,7 @@ function App() {
         
         <GlobalErrorOverlay />
 
+        <Suspense fallback={<div className="page-loading">Loading...</div>}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -228,6 +229,7 @@ function App() {
             } 
           />
         </Routes>
+        </Suspense>
       </Router>
     </AuthProvider>
   );

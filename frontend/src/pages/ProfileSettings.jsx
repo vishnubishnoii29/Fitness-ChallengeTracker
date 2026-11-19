@@ -47,12 +47,13 @@ const ProfileSettings = () => {
     setSubmitting(true);
     setStatus({ type: '', message: '' });
     try {
-      const res = await api.put('users/profile', {
-        username: editForm.username,
-        age: parseInt(editForm.age),
-        height: parseInt(editForm.height),
-        weight: parseInt(editForm.weight)
+      // Only send body measurements that are actually filled in (0 / empty means "not set")
+      const payload = { username: editForm.username };
+      ['age', 'height', 'weight'].forEach((field) => {
+        const value = parseInt(editForm[field], 10);
+        if (value > 0) payload[field] = value;
       });
+      const res = await api.put('users/profile', payload);
       setProfile(res.data);
       const updatedAuthUser = { ...authUser, ...res.data };
       setAuthUser(updatedAuthUser);

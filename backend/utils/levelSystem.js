@@ -1,3 +1,5 @@
+const Notification = require('../models/Notification');
+
 // Level System Utility Functions
 // Level progression: Quadratic scaling (Level 2: 1000, Level 3: 3000, Level 4: 6000, etc.)
 
@@ -49,7 +51,6 @@ const processExperience = async (user, amount) => {
   const numAmount = Number(amount);
   if (isNaN(numAmount) || numAmount <= 0) return null;
   
-  const Notification = require('../models/Notification');
   const oldXP = Number(user.xp) || 0;
   const oldLevel = user.level || calculateLevel(oldXP);
   

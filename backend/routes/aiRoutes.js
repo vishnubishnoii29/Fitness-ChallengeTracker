@@ -4,6 +4,24 @@ const { protect: auth } = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const Workout = require('../models/Workout');
 const Activity = require('../models/Activity');
+const { isString } = require('../utils/validate');
+
+const MAX_MESSAGE_LENGTH = 1000;
+
+// Returns an error string, or null when the chat body is valid
+const chatBodyError = (body) => {
+  if (!isString(body.message) || !body.message.trim()) return 'message is required';
+  if (body.message.length > MAX_MESSAGE_LENGTH) return `message must be under ${MAX_MESSAGE_LENGTH} characters`;
+  if (body.history !== undefined && !Array.isArray(body.history)) return 'history must be an array';
+  return null;
+};
+
+const toChatMessages = (history, level, message) => [
+  ...(history || []).slice(-1)
+    .filter(msg => msg && isString(msg.content))
+    .map(msg => ({ role: msg.role === 'model' ? 'assistant' : 'user', content: msg.content.slice(0, MAX_MESSAGE_LENGTH) })),
+  { role: 'user', content: `[Lvl ${level}] ${message}` }
+];
 
 // Helper for OpenRouter API
 const callAI = async (messages) => {
@@ -49,16 +67,14 @@ const callAI = async (messages) => {
 // Updated Streaming Endpoint
 router.post('/chat/stream', auth, async (req, res) => {
   try {
+    const bodyError = chatBodyError(req.body);
+    if (bodyError) return res.status(400).json({ message: bodyError });
     const { message, history } = req.body;
-    const userId = req.user.id;
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // 1. Prepare Context (Token Optimized)
-    const recentHistory = (history || []).slice(-1); // Only keep the last 1 previous message
-    const messages = [
-      ...recentHistory.map(msg => ({ role: msg.role === 'model' ? 'assistant' : 'user', content: msg.content })),
-      { role: "user", content: `[Lvl ${user.level}] ${message}` }
-    ];
+    // 1. Prepare Context (Token Optimized: only the last previous message is kept)
+    const messages = toChatMessages(history, user.level, message);
 
     // 2. Set Headers for Streaming
     res.setHeader('Content-Type', 'text/event-stream');
@@ -124,8 +140,8 @@ router.post('/chat/stream', auth, async (req, res) => {
       try {
         const fallback = await callAI(messages);
         res.write(`data: ${JSON.stringify({ text: fallback || "AI returned an empty response" })}\n\n`);
-      } catch (fallbackErr) {
-        res.write(`data: ${JSON.stringify({ text: `System Error: ${err.message}. Fallback Error: ${fallbackErr.message}` })}\n\n`);
+      } catch {
+        res.write(`data: ${JSON.stringify({ text: 'The AI coach is unavailable right now. Please try again in a moment.' })}\n\n`);
       }
     }
 
@@ -139,16 +155,13 @@ router.post('/chat/stream', auth, async (req, res) => {
 
 router.post('/chat', auth, async (req, res) => {
   try {
+    const bodyError = chatBodyError(req.body);
+    if (bodyError) return res.status(400).json({ message: bodyError });
     const { message, history } = req.body;
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-    const recentActivities = await Activity.find({ userId }).sort({ createdAt: -1 }).limit(5);
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const recentHistory = (history || []).slice(-1);
-    const messages = [
-      ...recentHistory.map(msg => ({ role: msg.role === 'model' ? 'assistant' : 'user', content: msg.content })),
-      { role: "user", content: `[Lvl ${user.level}] ${message}` }
-    ];
+    const messages = toChatMessages(history, user.level, message);
 
     const aiResponse = await callAI(messages);
     if (!aiResponse) return res.status(500).json({ message: 'AI is temporarily unavailable' });

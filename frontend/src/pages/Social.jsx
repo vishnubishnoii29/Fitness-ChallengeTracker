@@ -38,7 +38,7 @@ const Social = () => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.length >= 2) {
         try {
-          const res = await api.get(`users/search?q=${searchQuery}`);
+          const res = await api.get(`users/search?q=${encodeURIComponent(searchQuery)}`);
           setSearchResults(res.data || []);
         } catch (err) {
           console.error('Search error:', err);
@@ -131,7 +131,7 @@ const Social = () => {
               <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <input 
                 type="text"
-                placeholder="Search name or email..."
+                placeholder="Search by username..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 2.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
@@ -165,6 +165,8 @@ const Social = () => {
                       </span>
                     ) : user.friendshipStatus === 'pending' ? (
                       <span style={{ fontSize: '0.7rem', color: 'var(--warning-color)', opacity: 0.8 }}>Pending...</span>
+                    ) : user.friendshipStatus === 'incoming' ? (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--warning-color)', opacity: 0.8 }}>Sent you a request</span>
                     ) : (
                       <button 
                         onClick={() => sendRequest(user._id)}

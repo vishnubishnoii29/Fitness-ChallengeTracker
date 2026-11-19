@@ -1,0 +1,8 @@
+# The credential below was leaked in old git history and has been rotated/deleted.
+# Allow-listing it so the secret scan only reports new leaks.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Rotated credential from old history"
+regexes = ['''vishnuubishnoii29_db_user:webdev@cluster0\.cs0kqwy''']

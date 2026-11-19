@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { isString, escapeRegex } = require('../utils/validate');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -10,7 +11,7 @@ const generateToken = (id) => {
     throw new Error('JWT_SECRET environment variable is not configured');
   }
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: '7d',
   });
 };
 
@@ -19,14 +20,18 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, password } = req.body;
+    const email = isString(req.body.email) ? req.body.email.trim().toLowerCase() : req.body.email;
 
     // Validate inputs
-    if (!username || !email || !password) {
+    if (!isString(username) || !isString(email) || !isString(password) || !username || !email || !password) {
       return res.status(400).json({ message: 'Please provide username, email, and password' });
     }
 
     // Validate username
+    if (!/^[A-Za-z0-9_.@-]+$/.test(username)) {
+      return res.status(400).json({ message: 'Username may only contain letters, numbers and _ . @ -' });
+    }
     if (username.length < 3 || username.length > 30) {
       return res.status(400).json({ message: 'Username must be between 3 and 30 characters' });
     }
@@ -38,14 +43,16 @@ router.post('/register', async (req, res) => {
     }
 
     // Validate password strength
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    if (password.length < 6 || password.length > 72) {
+      return res.status(400).json({ message: 'Password must be between 6 and 72 characters' });
     }
 
     // Check if user exists
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
+    const userExists = await User.findOne({
+      $or: [{ email: { $regex: `^${escapeRegex(email)}$`, $options: 'i' } }, { username }]
+    });
     if (userExists) {
-      if (userExists.email === email) {
+      if (userExists.email.toLowerCase() === email) {
         return res.status(400).json({ message: 'Email already registered' });
       }
       return res.status(400).json({ message: 'Username already taken' });
@@ -60,7 +67,7 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      avatar: `https://ui-avatars.com/api/?name=${username}&background=random` // Auto-generate an avatar
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random` // Auto-generate an avatar
     });
 
     if (user) {
@@ -76,7 +83,7 @@ router.post('/register', async (req, res) => {
     }
   } catch (err) {
     console.error('Registration error:', err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: 'Error registering user' });
   }
 });
 
@@ -85,15 +92,18 @@ router.post('/register', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = isString(req.body.email) ? req.body.email.trim().toLowerCase() : req.body.email;
 
     // Validate inputs
-    if (!email || !password) {
+    if (!isString(email) || !isString(password) || !email || !password) {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
     // Check for user email
-    const user = await User.findOne({ email });
+    // Accounts created before emails were lower-cased may still be stored with capitals
+    const user = (await User.findOne({ email })) ||
+      (await User.findOne({ email: { $regex: `^${escapeRegex(email)}$`, $options: 'i' } }));
 
     if (user && (await bcrypt.compare(password, user.password))) {
       res.json({
@@ -111,11 +121,8 @@ router.post('/login', async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (err) {
-    console.error('Login error details:', err.message);
-    if (err.message.includes('JWT_SECRET')) {
-      return res.status(500).json({ message: 'Server configuration error: JWT_SECRET is missing' });
-    }
-    res.status(500).json({ message: 'Error logging in', error: err.message });
+    console.error('Login error:', err.message);
+    res.status(500).json({ message: 'Error logging in' });
   }
 });
 

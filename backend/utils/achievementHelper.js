@@ -1,59 +1,63 @@
 const User = require('../models/User');
-const Activity = require('../models/Activity');
 const Notification = require('../models/Notification');
 const { processExperience } = require('./levelSystem');
-
-// Achievement definitions
 const achievements = require('../config/achievements');
 
+// Achievements are derived only from server-maintained user fields (stats, streak, xp).
+const currentValueFor = (ach, user) => {
+  const stats = user.stats || {};
+  switch (ach.type) {
+    case 'challenge': return stats.challengesWon || 0;
+    case 'streak': return user.streak || 0;
+    case 'xp': return user.xp || 0;
+    case 'calories': return stats.burnedCalories || 0;
+    case 'distance': return stats.totalDistance || 0;
+    case 'time': return stats.workoutTime || 0;
+    default: return 0; // e.g. leaderboard-rank achievements are not awarded automatically
+  }
+};
+
+// Unlocks any newly earned achievements and pays their XP.
+// Each achievement is claimed with an atomic update, so concurrent calls can never award it twice.
+// Returns { unlocked, xpReward, oldLevel, newLevel }.
 const checkAndUnlockAchievements = async (userId) => {
+  const empty = { unlocked: [], xpReward: 0 };
   try {
     const user = await User.findById(userId);
-    if (!user) return;
+    if (!user) return empty;
 
-    const unlockedNew = [];
-    const stats = user.stats || { burnedCalories: 0, totalDistance: 0, workoutTime: 0, challengesWon: 0 };
+    const earned = achievements.filter(
+      (ach) => !(user.unlockedAchievements || []).includes(ach.id) && currentValueFor(ach, user) >= ach.requirement
+    );
 
-    for (const ach of achievements) {
-      if (user.unlockedAchievements && user.unlockedAchievements.includes(ach.id)) continue;
-
-      let current = 0;
-      if (ach.type === 'challenge') current = stats.challengesWon;
-      else if (ach.type === 'streak') current = user.streak || 0;
-      else if (ach.type === 'xp') current = user.xp || 0;
-      else if (ach.type === 'calories') current = stats.burnedCalories;
-      else if (ach.type === 'distance') current = stats.totalDistance;
-      else if (ach.type === 'time') current = stats.workoutTime;
-
-      if (current >= ach.requirement) {
-        unlockedNew.push(ach);
-      }
+    const claimed = [];
+    for (const ach of earned) {
+      const result = await User.updateOne(
+        { _id: userId, unlockedAchievements: { $ne: ach.id } },
+        { $push: { unlockedAchievements: ach.id } }
+      );
+      if (result.modifiedCount === 1) claimed.push(ach);
     }
+    if (claimed.length === 0) return empty;
 
-    if (unlockedNew.length > 0) {
-      if (!user.unlockedAchievements) user.unlockedAchievements = [];
-      
-      let totalXP = 0;
-      for (const ach of unlockedNew) {
-        user.unlockedAchievements.push(ach.id);
-        totalXP += ach.xpReward;
+    const xpReward = claimed.reduce((sum, ach) => sum + (ach.xpReward || 0), 0);
+    const fresh = await User.findById(userId);
+    const oldLevel = fresh.level;
+    await processExperience(fresh, xpReward);
+    await fresh.save();
 
-        // Create notification
-        await Notification.create({
-          userId: user._id,
-          title: '🏆 Achievement Unlocked!',
-          message: `You've unlocked: ${ach.id.replace(/_/g, ' ')}! +${ach.xpReward} XP`,
-          type: 'achievement_unlock',
-          read: false
-        });
-      }
+    await Notification.insertMany(claimed.map((ach) => ({
+      userId,
+      title: '🏆 Achievement Unlocked!',
+      message: `You've unlocked: ${ach.title}! +${ach.xpReward} XP`,
+      type: 'achievement_unlock',
+      data: { achievementId: ach.id, xpReward: ach.xpReward, newLevel: fresh.level },
+    })));
 
-      await processExperience(user, totalXP);
-      await user.save();
-      console.log(`Unlocked ${unlockedNew.length} achievements for user ${userId}`);
-    }
+    return { unlocked: claimed, xpReward, oldLevel, newLevel: fresh.level };
   } catch (err) {
     console.error('Achievement helper error:', err);
+    return empty;
   }
 };
 

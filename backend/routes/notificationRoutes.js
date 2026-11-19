@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Notification = require('../models/Notification');
 const { protect } = require('../middleware/authMiddleware');
+const { validateIdParams } = require('../utils/validate');
 
 // Get notifications for the logged in user
 router.get('/', protect, async (req, res) => {
@@ -12,7 +13,7 @@ router.get('/', protect, async (req, res) => {
     res.json(notifications);
   } catch (err) {
     console.error('Fetch notifications error', err);
-    res.status(500).json({ message: 'Could not fetch notifications', error: err.message });
+    res.status(500).json({ message: 'Could not fetch notifications' });
   }
 });
 
@@ -25,7 +26,7 @@ router.put('/mark-all-read', protect, async (req, res) => {
     );
     res.json({ message: 'All notifications marked as read' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to mark all as read', error: err.message });
+    res.status(500).json({ message: 'Failed to mark all as read' });
   }
 });
 
@@ -35,12 +36,12 @@ router.delete('/clear-all', protect, async (req, res) => {
     await Notification.deleteMany({ userId: req.user.id });
     res.json({ message: 'All notifications cleared' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to clear notifications', error: err.message });
+    res.status(500).json({ message: 'Failed to clear notifications' });
   }
 });
 
 // Mark a single notification as read
-router.put('/:id/read', protect, async (req, res) => {
+router.put('/:id/read', protect, validateIdParams('id'), async (req, res) => {
   try {
     const { id } = req.params;
     const n = await Notification.findOneAndUpdate(
@@ -51,7 +52,7 @@ router.put('/:id/read', protect, async (req, res) => {
     if (!n) return res.status(404).json({ message: 'Notification not found' });
     res.json(n);
   } catch (err) {
-    res.status(500).json({ message: 'Could not update notification', error: err.message });
+    res.status(500).json({ message: 'Could not update notification' });
   }
 });
 
@@ -66,7 +67,7 @@ router.post('/test', protect, async (req, res) => {
     });
     res.status(201).json(n);
   } catch (err) {
-    res.status(500).json({ message: 'Test failed', error: err.message });
+    res.status(500).json({ message: 'Test failed' });
   }
 });
 

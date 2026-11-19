@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Challenge = require('../models/Challenge');
+const User = require('../models/User');
+const { isString, validateIdParams } = require('../utils/validate');
+const { challengeXP, MAX_CHALLENGES_PER_DAY } = require('../utils/rewards');
 const { protect } = require('../middleware/authMiddleware');
 
 // Get all challenges
@@ -18,7 +21,6 @@ router.get('/', async (req, res) => {
 router.get('/active', protect, async (req, res) => {
   try {
     // Get the user's active challenges from their profile
-    const User = require('../models/User');
     const user = await User.findById(req.user.id).populate('activeChallenges.challengeId');
     
     if (!user) {
@@ -81,7 +83,7 @@ router.get('/active', protect, async (req, res) => {
 });
 
 // Get single challenge
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateIdParams('id'), async (req, res) => {
   try {
     const challenge = await Challenge.findById(req.params.id).populate('creator', 'username avatar');
     if (!challenge) {
@@ -97,15 +99,28 @@ router.get('/:id', async (req, res) => {
 // Create a challenge (protected)
 router.post('/', protect, async (req, res) => {
   try {
-    const { title, description, durationDays, goalType, goalValue, difficulty, rewardXP, rewardBadge } = req.body;
+    const { title, description, durationDays, goalType, goalValue, difficulty, rewardBadge } = req.body;
 
-    // Validate required fields
-    if (!title || !durationDays || !goalType || goalValue === undefined) {
+    // Validate required fields and types
+    if (!isString(title) || !isString(goalType) || durationDays === undefined || goalValue === undefined) {
       return res.status(400).json({ message: 'Missing required fields: title, durationDays, goalType, goalValue' });
     }
+    if (description !== undefined && (!isString(description) || description.length > 500)) {
+      return res.status(400).json({ message: 'description must be text up to 500 characters' });
+    }
+    if (rewardBadge !== undefined && (!isString(rewardBadge) || rewardBadge.length > 50)) {
+      return res.status(400).json({ message: 'rewardBadge must be text up to 50 characters' });
+    }
+    const days = Number(durationDays);
+    const goal = Number(goalValue);
+    if (!Number.isFinite(days) || days < 1 || days > 365) {
+      return res.status(400).json({ message: 'durationDays must be between 1 and 365' });
+    }
+    if (!Number.isFinite(goal) || goal <= 0 || goal > 100000) {
+      return res.status(400).json({ message: 'goalValue must be a positive number up to 100000' });
+    }
 
-    // Validate title length
-    if (title.length < 3 || title.length > 100) {
+    if (title.trim().length < 3 || title.length > 100) {
       return res.status(400).json({ message: 'Title must be between 3 and 100 characters' });
     }
 
@@ -121,14 +136,23 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: `difficulty must be one of: ${validDifficulties.join(', ')}` });
     }
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const createdToday = await Challenge.countDocuments({ creator: req.user.id, createdAt: { $gte: startOfToday } });
+    if (createdToday >= MAX_CHALLENGES_PER_DAY) {
+      return res.status(429).json({ message: `You can create up to ${MAX_CHALLENGES_PER_DAY} challenges per day` });
+    }
+
+    const level = difficulty || 'Medium';
     const challenge = new Challenge({
-      title,
+      title: title.trim(),
       description: description || '',
-      durationDays,
+      durationDays: days,
       goalType,
-      goalValue,
-      difficulty: difficulty || 'Medium',
-      rewardXP: rewardXP || 100,
+      goalValue: goal,
+      difficulty: level,
+      // Display value only (set by the server from difficulty). Community challenges do not pay XP.
+      rewardXP: challengeXP(level),
       rewardBadge: rewardBadge || '',
       creator: req.user.id,
       participantsCount: 1
@@ -137,7 +161,6 @@ router.post('/', protect, async (req, res) => {
     const newChallenge = await challenge.save();
 
     // Automatically join the creator to their own challenge
-    const User = require('../models/User');
     await User.findByIdAndUpdate(req.user.id, {
       $push: { activeChallenges: { challengeId: newChallenge._id, progress: 0 } }
     });
@@ -145,7 +168,7 @@ router.post('/', protect, async (req, res) => {
     res.status(201).json(newChallenge);
   } catch (err) {
     console.error('Challenge creation error:', err);
-    res.status(400).json({ message: err.message || 'Error creating challenge' });
+    res.status(400).json({ message: 'Error creating challenge' });
   }
 });
 

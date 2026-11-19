@@ -1,0 +1,25 @@
+# Render Blueprint: creates the backend web service.
+# Dashboard -> New -> Blueprint -> pick this repo. Secrets marked sync:false are asked for at creation.
+services:
+  - type: web
+    name: fitquest-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false

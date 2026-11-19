@@ -26,6 +26,9 @@ const workoutSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  description: { type: String, default: '', maxlength: 500 },
+  calories: { type: String, default: '' },
+  creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   image: {
     type: String,
     required: true

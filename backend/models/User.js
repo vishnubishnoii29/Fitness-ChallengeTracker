@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
   xp: { type: Number, default: 0 },
   streak: { type: Number, default: 1 },
+  lastStreakDate: { type: String, default: '' }, // YYYY-MM-DD of the last day counted towards the streak
   points: { type: Number, default: 0 },
   age: { type: Number, default: 0 },
   height: { type: Number, default: 0 },
@@ -27,6 +28,7 @@ const userSchema = new mongoose.Schema({
     progress: { type: Number, default: 0 },
     dateStarted: { type: Date, default: Date.now }
   }],
+  completedChallenges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' }],
   badges: [{ type: String }],
   unlockedAchievements: [{ type: String }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -40,6 +42,14 @@ const userSchema = new mongoose.Schema({
   recommendationsDate: { type: String, default: "" }, // Store as YYYY-MM-DD
   dailyInsight: { type: String, default: "" },
   insightDate: { type: String, default: "" }
+});
+
+// Never serialize the password hash, whichever route returns the document
+userSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    delete ret.password;
+    return ret;
+  }
 });
 
 userSchema.index({ points: -1 });

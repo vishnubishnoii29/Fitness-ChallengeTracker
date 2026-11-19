@@ -986,3 +986,11 @@ h6 {
     transform: rotate(360deg);
   }
 }
+.page-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: white;
+  font-weight: bold;
+}

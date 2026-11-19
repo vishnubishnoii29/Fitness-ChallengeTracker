@@ -60,7 +60,7 @@ FitQuest is a full-stack MERN fitness tracker that turns workout tracking into a
 - Streaming AI Coach chat using OpenRouter.
 - Dashboard AI insight, cached per day.
 - AI-based workout recommendations with database fallback.
-- Background heartbeat task that sends AI or static fitness tips every 10 minutes.
+- Background heartbeat task that sends AI or static fitness tips every 6 hours (notifications expire after 30 days).
 
 ### Notifications
 
@@ -105,6 +105,11 @@ FITNESSTRACKER/
   backend/
     config/
       achievements.js
+    data/
+      seedData.js
+    test/
+    jobs/
+      heartbeat.js
     middleware/
       authMiddleware.js
     models/
@@ -120,11 +125,18 @@ FITNESSTRACKER/
       authRoutes.js
       challengeRoutes.js
       notificationRoutes.js
+      friendRoutes.js
+      userProgressRoutes.js
       userRoutes.js
       workoutRoutes.js
     utils/
       achievementHelper.js
       levelSystem.js
+      rewards.js
+      seeder.js
+      streak.js
+      validate.js
+    app.js
     server.js
     seed.js
     package.json
@@ -193,7 +205,6 @@ POST /api/challenges
 
 ```text
 GET  /api/activity/user
-POST /api/activity
 
 GET  /api/achievements/unlocked
 POST /api/achievements/check-unlocks
@@ -227,7 +238,7 @@ Stores goal-based challenges with duration, goal type, goal value, difficulty, X
 
 ### Activity
 
-Stores user activity logs. These logs power dashboard charts, streaks, stats, achievement checks, and heartbeat notifications.
+Stores user activity logs written by the server when workouts and challenges are completed (clients cannot create them). These logs power dashboard charts, streaks, stats, achievement checks, and heartbeat notifications.
 
 ### Notification
 
@@ -260,10 +271,22 @@ OPENROUTER_API_KEY=optional_openrouter_key
 NODE_ENV=development
 ```
 
-Start the backend:
+Start the backend (`npm run dev` restarts on file changes):
 
 ```bash
 npm start
+```
+
+Run the tests (no database needed):
+
+```bash
+npm test
+```
+
+Reset challenges/workouts to the sample data (destructive):
+
+```bash
+npm run seed
 ```
 
 The backend runs on:
@@ -345,7 +368,7 @@ http://localhost:5173
 
 - The backend is the authority for XP, levels, streaks, stats, and achievements.
 - AI features are optional and have fallback behavior when the OpenRouter key is missing.
-- The app seeds sample users, workouts, routines, and challenges when the database is empty.
+- On startup the backend fills empty collections with sample challenges, workouts, and routines (`backend/data/seedData.js`). Demo users (password `123`) are created only when `NODE_ENV` is not `production`.
 - Background heartbeat notifications run after the backend connects to MongoDB.
 - Generated preparation files such as `PRESENTATION_SCRIPT.md` and `VIVA_PREP.md` are intentionally ignored by Git.
 
