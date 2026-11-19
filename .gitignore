@@ -5,3 +5,4 @@ VIVA_PREP.md
 atlas-credentials.env
 *.env
 !.env.example
+CLAUDE.md
