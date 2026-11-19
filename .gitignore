@@ -1,8 +1,7 @@
 PRESENTATION_SCRIPT.md
 VIVA_PREP.md
-
+CLAUDE.md
 # Local credential files (never commit)
 atlas-credentials.env
 *.env
 !.env.example
-CLAUDE.md
