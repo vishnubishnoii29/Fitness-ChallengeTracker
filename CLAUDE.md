@@ -34,4 +34,4 @@ Frontend (`cd frontend`; optional `.env` with `VITE_API_URL`):
 - `App.jsx` defines routes; authenticated pages (dashboard, workouts, routines, explore, challenges, leaderboard, social, profile, notifications, achievements, ai-coach) render inside a `ProtectedRoute` layout with `components/Sidebar.jsx`. One page component per route in `pages/`.
 - Styling is mostly a custom CSS design system in `index.css` with Tailwind 4 via `@tailwindcss/postcss`.
 
-**Deployment**: frontend on Vercel (`vercel.json` rewrites `/api/*` to the Render backend `fitness-challengetracker-2.onrender.com` and everything else to `/` for SPA routing); backend on Render. `PRESENTATION_SCRIPT.md` and `VIVA_PREP.md` are intentionally git-ignored prep files.
+**Deployment**: frontend on Vercel (`vercel.json` rewrites `/api/*` to the Render backend `fitquest-api-01tr.onrender.com` and everything else to `/` for SPA routing); backend on Render. `PRESENTATION_SCRIPT.md` and `VIVA_PREP.md` are intentionally git-ignored prep files.

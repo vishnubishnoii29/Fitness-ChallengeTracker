@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://fitness-challengetracker-2.onrender.com/api/$1"
+      "destination": "https://fitquest-api-01tr.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",

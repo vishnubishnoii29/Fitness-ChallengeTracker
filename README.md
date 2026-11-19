@@ -3,7 +3,7 @@
 FitQuest is a full-stack MERN fitness tracker that turns workout tracking into a game-like experience. Users can register, log in, start workouts and routines, join or create challenges, earn XP, level up, unlock achievements, compete on leaderboards, connect with friends, receive notifications, and chat with an AI fitness coach.
 
 **Live Demo:** [https://fitness-challenge-tracker-beta.vercel.app/](https://fitness-challenge-tracker-beta.vercel.app/)  
-**Backend API:** [https://fitness-challengetracker-2.onrender.com/](https://fitness-challengetracker-2.onrender.com/)
+**Backend API:** [https://fitquest-api-01tr.onrender.com/](https://fitquest-api-01tr.onrender.com/)
 
 ---
 
